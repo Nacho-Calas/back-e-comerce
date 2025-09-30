@@ -1,0 +1,7 @@
+.npmrc
+.env
+node_modules
+dist
+.serverless
+postman-collection-dashboard.json
+package-lock.json

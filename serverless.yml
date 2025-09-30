@@ -1,0 +1,323 @@
+service: back-e-comerce
+
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: us-east-2
+  environment:
+    NODE_ENV: ${self:provider.stage}
+    USERS_TABLE: ${self:service}-users-${self:provider.stage}
+    PRODUCTOS_TABLE: ${self:service}-productos-${self:provider.stage}
+    CARRITOS_TABLE: ${self:service}-carritos-${self:provider.stage}
+    JWT_SECRET: ${env:JWT_SECRET}
+    SALT_ROUNDS: 10
+    WHATSAPP_NUMBER: ${env:WHATSAPP_NUMBER}
+    COMPANY_NAME: ${env:COMPANY_NAME, 'Warehouse Solutions'}
+    AWS_REGION: ${self:provider.region}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:service}-*"
+        - Effect: Allow
+          Action:
+            - s3:GetObject
+            - s3:PutObject
+            - s3:DeleteObject
+          Resource:
+            - "arn:aws:s3:::${self:service}-files-${self:provider.stage}/*"
+
+functions:
+  # Auth functions
+  login:
+    handler: module/auth/exports/login.login
+    events:
+      - http:
+          path: /auth/login
+          method: post
+          cors: true
+
+  authorize:
+    handler: module/auth/exports/authorizer.authorize
+
+  # Product functions
+  createProducto:
+    handler: module/dashboard/exports/productos.createProducto
+    events:
+      - http:
+          path: /productos
+          method: post
+          cors: true
+          authorizer: authorize
+
+  getProductoById:
+    handler: module/dashboard/exports/productos.getProductoById
+    events:
+      - http:
+          path: /productos/{id}
+          method: get
+          cors: true
+
+  getAllProductos:
+    handler: module/dashboard/exports/productos.getAllProductos
+    events:
+      - http:
+          path: /productos
+          method: get
+          cors: true
+
+  getProductosByCategoria:
+    handler: module/dashboard/exports/productos.getProductosByCategoria
+    events:
+      - http:
+          path: /productos/categoria/{categoria}
+          method: get
+          cors: true
+
+  getProductosDestacados:
+    handler: module/dashboard/exports/productos.getProductosDestacados
+    events:
+      - http:
+          path: /productos/destacados
+          method: get
+          cors: true
+
+  buscarProductos:
+    handler: module/dashboard/exports/productos.buscarProductos
+    events:
+      - http:
+          path: /productos/buscar
+          method: get
+          cors: true
+
+  updateProducto:
+    handler: module/dashboard/exports/productos.updateProducto
+    events:
+      - http:
+          path: /productos
+          method: put
+          cors: true
+          authorizer: authorize
+
+  deleteProducto:
+    handler: module/dashboard/exports/productos.deleteProducto
+    events:
+      - http:
+          path: /productos/{id}
+          method: delete
+          cors: true
+          authorizer: authorize
+
+  getCategorias:
+    handler: module/dashboard/exports/productos.getCategorias
+    events:
+      - http:
+          path: /productos/categorias
+          method: get
+          cors: true
+
+  # Cart functions
+  createCarrito:
+    handler: module/dashboard/exports/carrito.createCarrito
+    events:
+      - http:
+          path: /carrito
+          method: post
+          cors: true
+
+  getCarritoById:
+    handler: module/dashboard/exports/carrito.getCarritoById
+    events:
+      - http:
+          path: /carrito/{id}
+          method: get
+          cors: true
+
+  getCarritoByUsuario:
+    handler: module/dashboard/exports/carrito.getCarritoByUsuario
+    events:
+      - http:
+          path: /carrito/usuario/{usuarioId}
+          method: get
+          cors: true
+
+  agregarItem:
+    handler: module/dashboard/exports/carrito.agregarItem
+    events:
+      - http:
+          path: /carrito/agregar-item
+          method: post
+          cors: true
+
+  actualizarCantidad:
+    handler: module/dashboard/exports/carrito.actualizarCantidad
+    events:
+      - http:
+          path: /carrito/actualizar-cantidad
+          method: put
+          cors: true
+
+  eliminarItem:
+    handler: module/dashboard/exports/carrito.eliminarItem
+    events:
+      - http:
+          path: /carrito/eliminar-item
+          method: delete
+          cors: true
+
+  limpiarCarrito:
+    handler: module/dashboard/exports/carrito.limpiarCarrito
+    events:
+      - http:
+          path: /carrito/{id}/limpiar
+          method: delete
+          cors: true
+
+  # WhatsApp functions
+  generarMensajePedido:
+    handler: module/dashboard/exports/whatsapp.generarMensajePedido
+    events:
+      - http:
+          path: /whatsapp/pedido/{carritoId}
+          method: get
+          cors: true
+
+  generarMensajeConsulta:
+    handler: module/dashboard/exports/whatsapp.generarMensajeConsulta
+    events:
+      - http:
+          path: /whatsapp/consulta/{productoId}
+          method: get
+          cors: true
+
+  getConfiguracionWhatsApp:
+    handler: module/dashboard/exports/whatsapp.getConfiguracion
+    events:
+      - http:
+          path: /whatsapp/configuracion
+          method: get
+          cors: true
+
+resources:
+  Resources:
+    # DynamoDB Tables
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:service}-users-${self:provider.stage}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: email-index
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+        BillingMode: PAY_PER_REQUEST
+
+    ProductosTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:service}-productos-${self:provider.stage}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: categoria
+            AttributeType: S
+          - AttributeName: destacado
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: categoria-index
+            KeySchema:
+              - AttributeName: categoria
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+          - IndexName: destacado-index
+            KeySchema:
+              - AttributeName: destacado
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+        BillingMode: PAY_PER_REQUEST
+
+    CarritosTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:service}-carritos-${self:provider.stage}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: usuarioId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: usuario-index
+            KeySchema:
+              - AttributeName: usuarioId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+        BillingMode: PAY_PER_REQUEST
+
+    # S3 Bucket for files
+    FilesBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:service}-files-${self:provider.stage}
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: false
+          BlockPublicPolicy: false
+          IgnorePublicAcls: false
+          RestrictPublicBuckets: false
+        CorsConfiguration:
+          CorsRules:
+            - AllowedHeaders:
+                - "*"
+              AllowedMethods:
+                - GET
+                - PUT
+                - POST
+                - DELETE
+                - HEAD
+              AllowedOrigins:
+                - "*"
+              MaxAge: 3000
+
+  Outputs:
+    ApiGatewayRestApiId:
+      Value:
+        Ref: ApiGatewayRestApi
+      Export:
+        Name: ${self:service}-${self:provider.stage}-restApiId
+
+    ApiGatewayRestApiRootResourceId:
+      Value:
+        Fn::GetAtt:
+          - ApiGatewayRestApi
+          - RootResourceId
+      Export:
+        Name: ${self:service}-${self:provider.stage}-rootResourceId
