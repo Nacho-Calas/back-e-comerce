@@ -6,8 +6,8 @@ import {
 import { ProductoNotFoundException } from "@/dashboard/application/exceptions/producto_not_found.exception";
 import { ProductoFactory } from "@/dashboard/application/factories/producto.factory";
 import { ProductoMapper } from "@/dashboard/application/mappers/producto.mapper";
-import { DynamoDBProductoAdapter } from "@/dashboard/infrastructure/adapters/dynamodb-producto.adapter";
-import { IProductoPort } from "@/dashboard/infrastructure/ports/producto_port";
+import { DynamoDBProductoAdapter } from "@/dashboard/src/infrastructure/adapters/dynamodb-producto.adapter";
+import { IProductoPort } from "@/dashboard/src/infrastructure/ports/producto_port";
 import {
   IContextuable,
   ILoggeable,

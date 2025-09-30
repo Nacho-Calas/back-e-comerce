@@ -6,9 +6,8 @@ import {
   ILoggeable,
   IThrowable,
 } from "@hex-lib/core";
-import { Carrito } from "@/dashboard/domain/entities/carrito.entity";
-import { Producto } from "@/dashboard/domain/entities/producto.entity";
-import { CarritoMapper } from "@/dashboard/application/mappers/carrito.mapper";
+import { Carrito } from "@/dashboard/src/domain/entities/carrito.entity";
+import { CarritoMapper } from "@/dashboard/src/application/mappers/carrito.mapper";
 import {
   CreateCarritoDTO,
   UpdateCarritoDTO,
@@ -16,11 +15,11 @@ import {
   ActualizarCantidadItemDTO,
   EliminarItemCarritoDTO,
   CarritoDTO,
-} from "@/dashboard/application/dtos/carrito.dto";
-import { ICarritoPort } from "@/dashboard/infrastructure/ports/carrito_port";
-import { IProductoPort } from "@/dashboard/infrastructure/ports/producto_port";
-import { DynamoDBCarritoAdapter } from "@/dashboard/infrastructure/adapters/dynamodb-carrito.adapter";
-import { DynamoDBProductoAdapter } from "@/dashboard/infrastructure/adapters/dynamodb-producto.adapter";
+} from "@/dashboard/src/application/dtos/carrito.dto";
+import { ICarritoPort } from "@/dashboard/src/infrastructure/ports/carrito_port";
+import { IProductoPort } from "@/dashboard/src/infrastructure/ports/producto_port";
+import { DynamoDBCarritoAdapter } from "@/dashboard/src/infrastructure/adapters/dynamodb-carrito.adapter";
+import { DynamoDBProductoAdapter } from "@/dashboard/src/infrastructure/adapters/dynamodb-producto.adapter";
 
 interface CarritoServiceDependencies extends Partial<ServiceDependencies> {
   ports: {
@@ -56,7 +55,7 @@ export class CarritoService
       id: require("@hex-lib/core").UUID.create(),
       usuarioId: dto.usuarioId,
       items:
-        dto.items?.map((item) => ({
+        dto.items?.map((item: any) => ({
           productoId: item.productoId,
           nombre: item.nombre,
           precio: item.precio,

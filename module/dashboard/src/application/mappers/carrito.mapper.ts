@@ -1,5 +1,5 @@
 import { UUID } from "@hex-lib/core";
-import { Carrito } from "@/dashboard/domain/entities/carrito.entity";
+import { Carrito } from "@/dashboard/src/domain/entities/carrito.entity";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
@@ -39,7 +39,7 @@ export class CarritoMapper {
     return new Carrito({
       id: new UUID(dto.id),
       usuarioId: dto.usuarioId,
-      items: dto.items.map(item => ({
+      items: dto.items.map((item) => ({
         productoId: item.productoId,
         nombre: item.nombre,
         precio: item.precio,
@@ -59,7 +59,7 @@ export class CarritoMapper {
     return new Carrito({
       id: existingCarrito.getId(),
       usuarioId: dto.usuarioId,
-      items: dto.items.map(item => ({
+      items: dto.items.map((item) => ({
         productoId: item.productoId,
         nombre: item.nombre,
         precio: item.precio,
@@ -76,14 +76,17 @@ export class CarritoMapper {
     return new CarritoDTO({
       id: carrito.getId().getValue(),
       usuarioId: carrito.getUsuarioId(),
-      items: carrito.getItems().map(item => new ItemCarritoDTO({
-        productoId: item.productoId,
-        nombre: item.nombre,
-        precio: item.precio,
-        cantidad: item.cantidad,
-        imagen: item.imagen,
-        especificaciones: item.especificaciones,
-      })),
+      items: carrito.getItems().map(
+        (item) =>
+          new ItemCarritoDTO({
+            productoId: item.productoId,
+            nombre: item.nombre,
+            precio: item.precio,
+            cantidad: item.cantidad,
+            imagen: item.imagen,
+            especificaciones: item.especificaciones,
+          })
+      ),
       fechaCreacion: carrito.getFechaCreacion(),
       fechaActualizacion: carrito.getFechaActualizacion(),
     });

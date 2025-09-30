@@ -1,5 +1,5 @@
 import { UUID } from "@hex-lib/core";
-import { Orden } from "@/dashboard/domain/entities/orden.entity";
+import { Orden } from "@/dashboard/src/domain/entities/orden.entity";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
@@ -10,7 +10,6 @@ import {
   InformacionPagoDTO,
   UpdateOrdenDTO,
 } from "../dtos/orden.dto";
-import { EstadoOrdenEnum } from "@/dashboard/domain/enums/estado_orden.enum";
 
 export class OrdenMapper {
   static fromDynamoDB(item: Record<string, AttributeValue>): Orden {
@@ -83,7 +82,8 @@ export class OrdenMapper {
       fechaActualizacion: new Date().toISOString(),
       fechaEnvio: existingOrden.getFechaEnvio(),
       fechaEntrega: existingOrden.getFechaEntrega(),
-      numeroSeguimiento: dto.numeroSeguimiento ?? existingOrden.getNumeroSeguimiento(),
+      numeroSeguimiento:
+        dto.numeroSeguimiento ?? existingOrden.getNumeroSeguimiento(),
       notas: dto.notas ?? existingOrden.getNotas(),
     });
   }
@@ -96,14 +96,17 @@ export class OrdenMapper {
       id: orden.getId().getValue(),
       numeroOrden: orden.getNumeroOrden(),
       usuarioId: orden.getUsuarioId(),
-      items: orden.getItems().map(item => new ItemOrdenDTO({
-        productoId: item.productoId,
-        nombre: item.nombre,
-        precio: item.precio,
-        cantidad: item.cantidad,
-        imagen: item.imagen,
-        especificaciones: item.especificaciones,
-      })),
+      items: orden.getItems().map(
+        (item) =>
+          new ItemOrdenDTO({
+            productoId: item.productoId,
+            nombre: item.nombre,
+            precio: item.precio,
+            cantidad: item.cantidad,
+            imagen: item.imagen,
+            especificaciones: item.especificaciones,
+          })
+      ),
       direccionEnvio: new DireccionEnvioDTO({
         nombre: direccionEnvio.nombre,
         apellido: direccionEnvio.apellido,

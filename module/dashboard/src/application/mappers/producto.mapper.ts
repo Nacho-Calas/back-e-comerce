@@ -1,5 +1,5 @@
 import { UUID } from "@hex-lib/core";
-import { Producto } from "@/dashboard/domain/entities/producto.entity";
+import { Producto } from "@/dashboard/src/domain/entities/producto.entity";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
@@ -9,8 +9,8 @@ import {
   InformacionEnvioDTO,
   EspecificacionesDTO,
 } from "../dtos/producto.dto";
-import { CategoriaProductoEnum } from "@/dashboard/domain/enums/categoria_producto.enum";
-import { EstadoProductoEnum } from "@/dashboard/domain/enums/estado_producto.enum";
+import { CategoriaProductoEnum } from "@/dashboard/src/domain/enums/categoria_producto.enum";
+import { EstadoProductoEnum } from "@/dashboard/src/domain/enums/estado_producto.enum";
 
 export class ProductoMapper {
   static fromDynamoDB(item: Record<string, AttributeValue>): Producto {
@@ -104,7 +104,8 @@ export class ProductoMapper {
       nombre: dto.nombre ?? existingProducto.getNombre(),
       descripcion: dto.descripcion ?? existingProducto.getDescripcion(),
       precio: dto.precio ?? existingProducto.getPrecio(),
-      precioOriginal: dto.precioOriginal ?? existingProducto.getPrecioOriginal(),
+      precioOriginal:
+        dto.precioOriginal ?? existingProducto.getPrecioOriginal(),
       estado: dto.estado ?? existingProducto.getEstado(),
       categoria: dto.categoria ?? existingProducto.getCategoria(),
       informacionEnvio: dto.informacionEnvio
@@ -118,8 +119,10 @@ export class ProductoMapper {
       destacado: dto.destacado ?? existingProducto.isDestacado(),
       stock: dto.stock ?? existingProducto.getStock(),
       stockMinimo: dto.stockMinimo ?? existingProducto.getStockMinimo(),
-      especificaciones: dto.especificaciones ?? existingProducto.getEspecificaciones(),
-      caracteristicas: dto.caracteristicas ?? existingProducto.getCaracteristicas(),
+      especificaciones:
+        dto.especificaciones ?? existingProducto.getEspecificaciones(),
+      caracteristicas:
+        dto.caracteristicas ?? existingProducto.getCaracteristicas(),
       imagenes: dto.imagenes ?? existingProducto.getImagenes(),
       videos: dto.videos ?? existingProducto.getVideos(),
       manuales: dto.manuales ?? existingProducto.getManuales(),
