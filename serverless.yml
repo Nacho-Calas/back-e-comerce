@@ -15,7 +15,7 @@ provider:
     JWT_SECRET: ${env:JWT_SECRET}
     SALT_ROUNDS: 10
     WHATSAPP_NUMBER: ${env:WHATSAPP_NUMBER}
-    COMPANY_NAME: ${env:COMPANY_NAME, 'Warehouse Solutions'}
+    COMPANY_NAME: ${env:COMPANY_NAME, 'Depotix'}
     AWS_REGION: ${self:provider.region}
   iam:
     role:
