@@ -60,8 +60,10 @@ provider:
             # Dashboard module tables
             - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.productosTableName}"
             - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.carritosTableName}"
+            - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.configuracionTableName}"
             - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.productosTableName}/index/*"
             - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.carritosTableName}/index/*"
+            - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.configuracionTableName}/index/*"
         - Effect: Allow
           Action:
             - s3:PutObject
@@ -81,18 +83,19 @@ provider:
     # Dashboard module variables
     PRODUCTOS_TABLE: ${self:custom.productosTableName}
     CARRITOS_TABLE: ${self:custom.carritosTableName}
-    WHATSAPP_NUMBER: ${env:WHATSAPP_NUMBER, '+5491123456789'}
-    COMPANY_NAME: ${env:COMPANY_NAME, 'Depotix'}
+    CONFIGURACION_TABLE: ${self:custom.configuracionTableName}
     # S3 configuration
     S3_BUCKET_NAME: ${self:custom.filesBucketName}
     AWS_REGION: ${self:provider.region}
 
 custom:
   # Auth module tables
-  usersTableName: ${self:service}-users-${sls:stage}
-  # Dashboard module tables
+  usersTableName:
+    ${self:service}-users-${sls:stage}
+    # Dashboard module tables
   productosTableName: ${self:service}-productos-${sls:stage}
   carritosTableName: ${self:service}-carritos-${sls:stage}
+  configuracionTableName: ${self:service}-configuracion-${sls:stage}
   # S3 bucket
   filesBucketName: ${self:service}-files-${sls:stage}
 
@@ -202,11 +205,11 @@ functions:
           path: /carrito/{id}
           method: GET
 
-  getCarritoByUsuario:
-    handler: module/dashboard/exports/carrito.getCarritoByUsuario
+  getCarritoBySession:
+    handler: module/dashboard/exports/carrito.getCarritoBySession
     events:
       - httpApi:
-          path: /carrito/usuario/{usuarioId}
+          path: /carrito/session/{sessionId}
           method: GET
 
   agregarItem:
@@ -237,27 +240,22 @@ functions:
           path: /carrito/{id}/limpiar
           method: DELETE
 
-  # WhatsApp functions
-  generarMensajePedido:
-    handler: module/dashboard/exports/whatsapp.generarMensajePedido
+  # Configuration functions
+  getConfiguracion:
+    handler: module/dashboard/exports/config.getConfiguracion
     events:
       - httpApi:
-          path: /whatsapp/pedido/{carritoId}
+          path: /configuracion
           method: GET
 
-  generarMensajeConsulta:
-    handler: module/dashboard/exports/whatsapp.generarMensajeConsulta
+  updateConfiguracion:
+    handler: module/dashboard/exports/config.updateConfiguracion
     events:
       - httpApi:
-          path: /whatsapp/consulta/{productoId}
-          method: GET
-
-  getConfiguracionWhatsApp:
-    handler: module/dashboard/exports/whatsapp.getConfiguracion
-    events:
-      - httpApi:
-          path: /whatsapp/configuracion
-          method: GET
+          path: /configuracion
+          method: PUT
+          authorizer:
+            name: lambdaAuthorizer
 
   # ========================================
   # ARCHIVO MODULE FUNCTIONS
@@ -269,6 +267,8 @@ functions:
       - httpApi:
           path: /archivos/presigned-url
           method: GET
+          authorizer:
+            name: lambdaAuthorizer
 
 resources:
   Resources:
@@ -339,15 +339,37 @@ resources:
         AttributeDefinitions:
           - AttributeName: id
             AttributeType: S
-          - AttributeName: usuarioId
+          - AttributeName: sessionId
             AttributeType: S
         KeySchema:
           - AttributeName: id
             KeyType: HASH
         GlobalSecondaryIndexes:
-          - IndexName: usuario-index
+          - IndexName: session-index
             KeySchema:
-              - AttributeName: usuarioId
+              - AttributeName: sessionId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+
+    # Configuracion Table
+    ConfiguracionTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.configuracionTableName}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: activo
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: activo-index
+            KeySchema:
+              - AttributeName: activo
                 KeyType: HASH
             Projection:
               ProjectionType: ALL
