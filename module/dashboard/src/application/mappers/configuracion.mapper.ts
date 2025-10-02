@@ -40,7 +40,9 @@ export class ConfiguracionMapper {
     });
   }
 
-  static toDynamoDB(configuracion: Configuracion): Record<string, AttributeValue> {
+  static toDynamoDB(
+    configuracion: Configuracion
+  ): Record<string, AttributeValue> {
     const plainConfiguracion = {
       id: configuracion.getId().getValue(),
       nombreEmpresa: configuracion.getNombreEmpresa(),
@@ -74,35 +76,60 @@ export class ConfiguracionMapper {
     });
   }
 
-  static toEntity(dto: UpdateConfiguracionDTO, existingConfiguracion?: Configuracion): Configuracion {
+  static toEntity(
+    dto: UpdateConfiguracionDTO,
+    existingConfiguracion?: Configuracion
+  ): Configuracion {
     const now = new Date().toISOString();
 
     return new Configuracion({
       id: new UUID(dto.id),
-      nombreEmpresa: dto.nombreEmpresa ?? (existingConfiguracion?.getNombreEmpresa() || ""),
-      descripcion: dto.descripcion ?? (existingConfiguracion?.getDescripcion() || ""),
-      logo: dto.logo ?? existingConfiguracion?.getLogo(),
-      favicon: dto.favicon ?? existingConfiguracion?.getFavicon(),
-      whatsappNumber: dto.whatsappNumber ?? (existingConfiguracion?.getWhatsappNumber() || ""),
-      telefono: dto.telefono ?? existingConfiguracion?.getTelefono(),
-      email: dto.email ?? existingConfiguracion?.getEmail(),
-      direccion: dto.direccion ?? existingConfiguracion?.getDireccion(),
-      instagram: dto.instagram ?? existingConfiguracion?.getInstagram(),
-      facebook: dto.facebook ?? existingConfiguracion?.getFacebook(),
-      linkedin: dto.linkedin ?? existingConfiguracion?.getLinkedin(),
-      youtube: dto.youtube ?? existingConfiguracion?.getYoutube(),
-      moneda: dto.moneda ?? (existingConfiguracion?.getMoneda() || "$"),
-      pais: dto.pais ?? (existingConfiguracion?.getPais() || "Argentina"),
-      zonaHoraria: dto.zonaHoraria ?? (existingConfiguracion?.getZonaHoraria() || "America/Argentina/Buenos_Aires"),
-      idioma: dto.idioma ?? (existingConfiguracion?.getIdioma() || "es"),
-      costoEnvioGratis: dto.costoEnvioGratis ?? existingConfiguracion?.getCostoEnvioGratis(),
-      costoEnvioEstandar: dto.costoEnvioEstandar ?? existingConfiguracion?.getCostoEnvioEstandar(),
-      tiempoEntrega: dto.tiempoEntrega ?? existingConfiguracion?.getTiempoEntrega(),
-      mensajeBienvenida: dto.mensajeBienvenida ?? existingConfiguracion?.getMensajeBienvenida(),
-      mensajeDespedida: dto.mensajeDespedida ?? existingConfiguracion?.getMensajeDespedida(),
+      nombreEmpresa:
+        dto.nombreEmpresa || existingConfiguracion?.getNombreEmpresa() || "",
+      descripcion:
+        dto.descripcion || existingConfiguracion?.getDescripcion() || "",
+      logo: dto.logo || existingConfiguracion?.getLogo() || null,
+      favicon: dto.favicon || existingConfiguracion?.getFavicon() || null,
+      whatsappNumber:
+        dto.whatsappNumber || existingConfiguracion?.getWhatsappNumber() || "",
+      telefono: dto.telefono || existingConfiguracion?.getTelefono() || null,
+      email: dto.email || existingConfiguracion?.getEmail() || null,
+      direccion: dto.direccion || existingConfiguracion?.getDireccion() || null,
+      instagram: dto.instagram || existingConfiguracion?.getInstagram() || null,
+      facebook: dto.facebook || existingConfiguracion?.getFacebook() || null,
+      linkedin: dto.linkedin || existingConfiguracion?.getLinkedin() || null,
+      youtube: dto.youtube || existingConfiguracion?.getYoutube() || null,
+      moneda: dto.moneda || existingConfiguracion?.getMoneda() || "$",
+      pais: dto.pais || existingConfiguracion?.getPais() || "Argentina",
+      zonaHoraria:
+        dto.zonaHoraria ||
+        existingConfiguracion?.getZonaHoraria() ||
+        "America/Argentina/Buenos_Aires",
+      idioma: dto.idioma || existingConfiguracion?.getIdioma() || "es",
+      costoEnvioGratis:
+        dto.costoEnvioGratis ||
+        existingConfiguracion?.getCostoEnvioGratis() ||
+        null,
+      costoEnvioEstandar:
+        dto.costoEnvioEstandar ||
+        existingConfiguracion?.getCostoEnvioEstandar() ||
+        null,
+      tiempoEntrega:
+        dto.tiempoEntrega || existingConfiguracion?.getTiempoEntrega() || null,
+      mensajeBienvenida:
+        dto.mensajeBienvenida ||
+        existingConfiguracion?.getMensajeBienvenida() ||
+        null,
+      mensajeDespedida:
+        dto.mensajeDespedida ||
+        existingConfiguracion?.getMensajeDespedida() ||
+        null,
       fechaCreacion: existingConfiguracion?.getFechaCreacion() || now,
       fechaActualizacion: now,
-      activo: dto.activo ?? existingConfiguracion?.isActivo() ?? true,
+      activo:
+        dto.activo !== null
+          ? dto.activo
+          : existingConfiguracion?.isActivo() ?? true,
     });
   }
 

@@ -11,6 +11,7 @@ import {
 } from "../dtos/producto.dto";
 import { CategoriaProductoEnum } from "@/dashboard/domain/enums/categoria_producto.enum";
 import { EstadoProductoEnum } from "@/dashboard/domain/enums/estado_producto.enum";
+import { instanceToPlain } from "class-transformer";
 
 export class ProductoMapper {
   static fromDynamoDB(item: Record<string, AttributeValue>): Producto {
@@ -39,108 +40,110 @@ export class ProductoMapper {
   }
 
   static toDynamoDB(producto: Producto): Record<string, AttributeValue> {
-    const plainProducto = {
-      id: producto.getId().getValue(),
-      nombre: producto.getNombre(),
-      descripcion: producto.getDescripcion(),
-      precio: producto.getPrecio(),
-      precioOriginal: producto.getPrecioOriginal(),
-      estado: producto.getEstado(),
-      categoria: producto.getCategoria(),
-      informacionEnvio: producto.getInformacionEnvio(),
-      destacado: producto.isDestacado().toString(),
-      stock: producto.getStock(),
-      stockMinimo: producto.getStockMinimo(),
-      especificaciones: producto.getEspecificaciones(),
-      caracteristicas: producto.getCaracteristicas(),
-      imagenes: producto.getImagenes(),
-      videos: producto.getVideos(),
-      manuales: producto.getManuales(),
-      activo: producto.isActivo().toString(),
-      fechaCreacion: producto.getFechaCreacion(),
-      fechaActualizacion: producto.getFechaActualizacion(),
-    };
-    return marshall(plainProducto, {
-      convertClassInstanceToMap: true,
-      removeUndefinedValues: true,
-    });
+    const plainProducto = instanceToPlain(producto);
+    plainProducto.fechaActualizacion = new Date().toISOString();
+    return marshall(plainProducto);
   }
 
-  static toEntity(dto: UpdateProductoDTO): Producto {
-    return new Producto({
+  static toEntity(
+    dto: UpdateProductoDTO,
+    existingProducto?: Producto
+  ): Producto {
+    const now = new Date().toISOString();
+
+    const params: any = {
       id: new UUID(dto.id),
-      nombre: dto.nombre || "",
-      descripcion: dto.descripcion || "",
-      precio: dto.precio || 0,
-      precioOriginal: dto.precioOriginal,
-      estado: dto.estado || EstadoProductoEnum.DISPONIBLE,
-      categoria: dto.categoria || CategoriaProductoEnum.ELECTRONICOS,
-      informacionEnvio: dto.informacionEnvio || {
-        peso: 0,
-        dimensiones: { largo: 0, ancho: 0, alto: 0 },
-        fragil: false,
-        requiereFirma: false,
-      },
-      destacado: dto.destacado ?? false,
-      stock: dto.stock || 0,
-      stockMinimo: dto.stockMinimo || 0,
-      especificaciones: dto.especificaciones || {},
-      caracteristicas: dto.caracteristicas || [],
-      imagenes: dto.imagenes || [],
-      videos: dto.videos,
-      manuales: dto.manuales,
-      activo: dto.activo ?? true,
-      fechaCreacion: new Date().toISOString(),
-      fechaActualizacion: new Date().toISOString(),
-    });
+      nombre: dto.nombre || existingProducto?.getNombre() || "",
+      descripcion: dto.descripcion || existingProducto?.getDescripcion() || "",
+      precio: dto.precio || existingProducto?.getPrecio() || 0,
+      estado:
+        dto.estado ||
+        existingProducto?.getEstado() ||
+        EstadoProductoEnum.DISPONIBLE,
+      categoria:
+        dto.categoria ||
+        existingProducto?.getCategoria() ||
+        CategoriaProductoEnum.EQUIPOS_LOGISTICA,
+      informacionEnvio: dto.informacionEnvio ||
+        existingProducto?.getInformacionEnvio() || {
+          peso: 0,
+          dimensiones: { largo: 0, ancho: 0, alto: 0 },
+          fragil: false,
+          requiereFirma: false,
+        },
+      destacado:
+        dto.destacado !== undefined
+          ? dto.destacado
+          : existingProducto?.isDestacado() ?? false,
+      stock: dto.stock || existingProducto?.getStock() || 0,
+      stockMinimo: dto.stockMinimo || existingProducto?.getStockMinimo() || 0,
+      especificaciones:
+        dto.especificaciones || existingProducto?.getEspecificaciones() || {},
+      caracteristicas:
+        dto.caracteristicas || existingProducto?.getCaracteristicas() || [],
+      imagenes: dto.imagenes || existingProducto?.getImagenes() || [],
+      activo:
+        dto.activo !== undefined
+          ? dto.activo
+          : existingProducto?.isActivo() ?? true,
+      fechaCreacion: existingProducto?.getFechaCreacion() || now,
+      fechaActualizacion: now,
+    };
+
+    // Manejar campos opcionales
+    if (
+      dto.precioOriginal !== undefined ||
+      existingProducto?.getPrecioOriginal() !== undefined
+    ) {
+      params.precioOriginal =
+        dto.precioOriginal ?? existingProducto?.getPrecioOriginal();
+    }
+    if (
+      dto.videos !== undefined ||
+      existingProducto?.getVideos() !== undefined
+    ) {
+      params.videos = dto.videos ?? existingProducto?.getVideos();
+    }
+    if (
+      dto.manuales !== undefined ||
+      existingProducto?.getManuales() !== undefined
+    ) {
+      params.manuales = dto.manuales ?? existingProducto?.getManuales();
+    }
+
+    return new Producto(params);
   }
 
   static mergeForUpdate(
     existingProducto: Producto,
     dto: UpdateProductoDTO
   ): Producto {
-    return new Producto({
-      id: existingProducto.getId(),
-      nombre: dto.nombre ?? existingProducto.getNombre(),
-      descripcion: dto.descripcion ?? existingProducto.getDescripcion(),
-      precio: dto.precio ?? existingProducto.getPrecio(),
-      precioOriginal:
-        dto.precioOriginal ?? existingProducto.getPrecioOriginal(),
-      estado: dto.estado ?? existingProducto.getEstado(),
-      categoria: dto.categoria ?? existingProducto.getCategoria(),
-      informacionEnvio: dto.informacionEnvio
-        ? {
-            peso: dto.informacionEnvio.peso,
-            dimensiones: dto.informacionEnvio.dimensiones,
-            fragil: dto.informacionEnvio.fragil,
-            requiereFirma: dto.informacionEnvio.requiereFirma,
-          }
-        : existingProducto.getInformacionEnvio(),
-      destacado: dto.destacado ?? existingProducto.isDestacado(),
-      stock: dto.stock ?? existingProducto.getStock(),
-      stockMinimo: dto.stockMinimo ?? existingProducto.getStockMinimo(),
-      especificaciones:
-        dto.especificaciones ?? existingProducto.getEspecificaciones(),
-      caracteristicas:
-        dto.caracteristicas ?? existingProducto.getCaracteristicas(),
-      imagenes: dto.imagenes ?? existingProducto.getImagenes(),
-      videos: dto.videos ?? existingProducto.getVideos(),
-      manuales: dto.manuales ?? existingProducto.getManuales(),
-      activo: dto.activo ?? existingProducto.isActivo(),
-      fechaCreacion: existingProducto.getFechaCreacion(),
-      fechaActualizacion: new Date().toISOString(),
-    });
+    return this.toEntity(dto, existingProducto);
   }
 
   static toDTO(producto: Producto): ProductoDTO {
     const informacionEnvio = producto.getInformacionEnvio();
+    const especificaciones = producto.getEspecificaciones();
 
-    return new ProductoDTO({
+    // Filtrar valores undefined de las especificaciones y convertir arrays a strings
+    const especificacionesFiltradas: {
+      [key: string]: string | number | boolean;
+    } = {};
+    Object.entries(especificaciones).forEach(([key, value]) => {
+      if (value !== undefined) {
+        if (Array.isArray(value)) {
+          especificacionesFiltradas[key] = value.join(", ");
+        } else {
+          especificacionesFiltradas[key] = value;
+        }
+      }
+    });
+
+    const dtoParams: any = {
       id: producto.getId().getValue(),
       nombre: producto.getNombre(),
       descripcion: producto.getDescripcion(),
       precio: producto.getPrecio(),
-      precioOriginal: producto.getPrecioOriginal(),
       estado: producto.getEstado(),
       categoria: producto.getCategoria(),
       informacionEnvio: new InformacionEnvioDTO({
@@ -152,14 +155,25 @@ export class ProductoMapper {
       destacado: producto.isDestacado(),
       stock: producto.getStock(),
       stockMinimo: producto.getStockMinimo(),
-      especificaciones: new EspecificacionesDTO(producto.getEspecificaciones()),
+      especificaciones: new EspecificacionesDTO(especificacionesFiltradas),
       caracteristicas: producto.getCaracteristicas(),
       imagenes: producto.getImagenes(),
-      videos: producto.getVideos(),
-      manuales: producto.getManuales(),
       activo: producto.isActivo(),
       fechaCreacion: producto.getFechaCreacion(),
       fechaActualizacion: producto.getFechaActualizacion(),
-    });
+    };
+
+    // Manejar campos opcionales
+    if (producto.getPrecioOriginal() !== undefined) {
+      dtoParams.precioOriginal = producto.getPrecioOriginal();
+    }
+    if (producto.getVideos() !== undefined) {
+      dtoParams.videos = producto.getVideos();
+    }
+    if (producto.getManuales() !== undefined) {
+      dtoParams.manuales = producto.getManuales();
+    }
+
+    return new ProductoDTO(dtoParams);
   }
 }
