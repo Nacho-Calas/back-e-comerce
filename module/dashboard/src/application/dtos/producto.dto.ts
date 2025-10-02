@@ -8,6 +8,7 @@ import {
   IsEnum,
   IsObject,
   Min,
+  ArrayMinSize,
 } from "class-validator";
 import { EstadoProductoEnum } from "@/dashboard/domain/enums/estado_producto.enum";
 import { CategoriaProductoEnum } from "@/dashboard/domain/enums/categoria_producto.enum";
@@ -53,14 +54,15 @@ export class CreateProductoDTO {
   @IsString()
   descripcion!: string;
 
+  @IsOptional()
   @IsNumber()
   @Min(0)
-  precio!: number; // precio en centavos
+  precio?: number | null; // precio en centavos, puede ser nulo
 
   @IsOptional()
   @IsNumber()
   @Min(0)
-  precioOriginal?: number;
+  precioOriginal?: number | null; // precio original, puede ser nulo
 
   @IsEnum(EstadoProductoEnum)
   estado!: EstadoProductoEnum;
@@ -68,8 +70,9 @@ export class CreateProductoDTO {
   @IsEnum(CategoriaProductoEnum)
   categoria!: CategoriaProductoEnum;
 
+  @IsOptional()
   @ValidateNested()
-  informacionEnvio!: InformacionEnvioDTO;
+  informacionEnvio?: InformacionEnvioDTO | null; // información de envío, puede ser nula
 
   @IsBoolean()
   destacado!: boolean;
@@ -80,31 +83,31 @@ export class CreateProductoDTO {
 
   @IsNumber()
   @Min(0)
-  stockMinimo!: number;
+  stockMinimo!: number; // stock mínimo para alertas de reposición
 
   @IsOptional()
   @IsObject()
-  especificaciones?: EspecificacionesDTO;
+  especificaciones?: EspecificacionesDTO | null; // especificaciones técnicas, puede ser nula
 
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  caracteristicas?: string[];
+  caracteristicas?: string[] | null; // características del producto, puede ser nula
+
+  @IsArray()
+  @IsString({ each: true })
+  @ArrayMinSize(1, { message: "Debe incluir al menos una imagen" })
+  imagenes!: string[]; // imágenes del producto, obligatorio al menos 1
 
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  imagenes?: string[];
+  videos?: string[] | null; // videos del producto, puede ser nulo
 
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  videos?: string[];
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  manuales?: string[];
+  manuales?: string[] | null; // manuales del producto, puede ser nulo
 
   @IsBoolean()
   activo!: boolean;
@@ -112,19 +115,23 @@ export class CreateProductoDTO {
   constructor(createProductoDTO: CreateProductoDTO) {
     this.nombre = createProductoDTO.nombre;
     this.descripcion = createProductoDTO.descripcion;
-    this.precio = createProductoDTO.precio;
-    this.precioOriginal = createProductoDTO.precioOriginal;
+    this.precio = createProductoDTO.precio ?? null;
+    this.precioOriginal = createProductoDTO.precioOriginal ?? null;
     this.estado = createProductoDTO.estado;
     this.categoria = createProductoDTO.categoria;
-    this.informacionEnvio = new InformacionEnvioDTO(createProductoDTO.informacionEnvio);
+    this.informacionEnvio = createProductoDTO.informacionEnvio
+      ? new InformacionEnvioDTO(createProductoDTO.informacionEnvio)
+      : null;
     this.destacado = createProductoDTO.destacado;
     this.stock = createProductoDTO.stock;
     this.stockMinimo = createProductoDTO.stockMinimo;
-    this.especificaciones = createProductoDTO.especificaciones ? new EspecificacionesDTO(createProductoDTO.especificaciones) : undefined;
-    this.caracteristicas = createProductoDTO.caracteristicas || [];
-    this.imagenes = createProductoDTO.imagenes || [];
-    this.videos = createProductoDTO.videos;
-    this.manuales = createProductoDTO.manuales;
+    this.especificaciones = createProductoDTO.especificaciones
+      ? new EspecificacionesDTO(createProductoDTO.especificaciones)
+      : null;
+    this.caracteristicas = createProductoDTO.caracteristicas ?? null;
+    this.imagenes = createProductoDTO.imagenes;
+    this.videos = createProductoDTO.videos ?? null;
+    this.manuales = createProductoDTO.manuales ?? null;
     this.activo = createProductoDTO.activo;
   }
 }
@@ -161,7 +168,7 @@ export class UpdateProductoDTO {
 
   @IsOptional()
   @ValidateNested()
-  informacionEnvio?: InformacionEnvioDTO;
+  informacionEnvio?: InformacionEnvioDTO | undefined;
 
   @IsOptional()
   @IsBoolean()
@@ -179,7 +186,7 @@ export class UpdateProductoDTO {
 
   @IsOptional()
   @IsObject()
-  especificaciones?: EspecificacionesDTO;
+  especificaciones?: EspecificacionesDTO | undefined;
 
   @IsOptional()
   @IsArray()
@@ -207,22 +214,27 @@ export class UpdateProductoDTO {
 
   constructor(updateProductoDTO: UpdateProductoDTO) {
     this.id = updateProductoDTO.id;
-    this.nombre = updateProductoDTO.nombre;
-    this.descripcion = updateProductoDTO.descripcion;
-    this.precio = updateProductoDTO.precio;
-    this.precioOriginal = updateProductoDTO.precioOriginal;
-    this.estado = updateProductoDTO.estado;
-    this.categoria = updateProductoDTO.categoria;
-    this.informacionEnvio = updateProductoDTO.informacionEnvio ? new InformacionEnvioDTO(updateProductoDTO.informacionEnvio) : undefined;
-    this.destacado = updateProductoDTO.destacado;
-    this.stock = updateProductoDTO.stock;
-    this.stockMinimo = updateProductoDTO.stockMinimo;
-    this.especificaciones = updateProductoDTO.especificaciones ? new EspecificacionesDTO(updateProductoDTO.especificaciones) : undefined;
-    this.caracteristicas = updateProductoDTO.caracteristicas;
-    this.imagenes = updateProductoDTO.imagenes;
-    this.videos = updateProductoDTO.videos;
-    this.manuales = updateProductoDTO.manuales;
-    this.activo = updateProductoDTO.activo;
+    this.nombre = updateProductoDTO.nombre ?? "";
+    this.descripcion = updateProductoDTO.descripcion ?? "";
+    this.precio = updateProductoDTO.precio ?? 0;
+    this.precioOriginal = updateProductoDTO.precioOriginal ?? 0;
+    this.estado = updateProductoDTO.estado ?? EstadoProductoEnum.DISPONIBLE;
+    this.categoria =
+      updateProductoDTO.categoria ?? CategoriaProductoEnum.LECTORES_RFID;
+    this.informacionEnvio = updateProductoDTO.informacionEnvio
+      ? new InformacionEnvioDTO(updateProductoDTO.informacionEnvio)
+      : undefined;
+    this.destacado = updateProductoDTO.destacado ?? false;
+    this.stock = updateProductoDTO.stock ?? 0;
+    this.stockMinimo = updateProductoDTO.stockMinimo ?? 0;
+    this.especificaciones = updateProductoDTO.especificaciones
+      ? new EspecificacionesDTO(updateProductoDTO.especificaciones)
+      : undefined;
+    this.caracteristicas = updateProductoDTO.caracteristicas ?? [];
+    this.imagenes = updateProductoDTO.imagenes ?? [];
+    this.videos = updateProductoDTO.videos ?? [];
+    this.manuales = updateProductoDTO.manuales ?? [];
+    this.activo = updateProductoDTO.activo ?? true;
   }
 }
 
@@ -241,7 +253,7 @@ export class ProductoDTO {
 
   @IsOptional()
   @IsNumber()
-  precioOriginal?: number;
+  precioOriginal?: number | undefined;
 
   @IsString()
   estado!: string;
@@ -275,12 +287,12 @@ export class ProductoDTO {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  videos?: string[];
+  videos?: string[] | undefined;
 
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  manuales?: string[];
+  manuales?: string[] | undefined;
 
   @IsBoolean()
   activo!: boolean;
@@ -299,11 +311,15 @@ export class ProductoDTO {
     this.precioOriginal = productoResponseDTO.precioOriginal;
     this.estado = productoResponseDTO.estado;
     this.categoria = productoResponseDTO.categoria;
-    this.informacionEnvio = new InformacionEnvioDTO(productoResponseDTO.informacionEnvio);
+    this.informacionEnvio = new InformacionEnvioDTO(
+      productoResponseDTO.informacionEnvio
+    );
     this.destacado = productoResponseDTO.destacado;
     this.stock = productoResponseDTO.stock;
     this.stockMinimo = productoResponseDTO.stockMinimo;
-    this.especificaciones = new EspecificacionesDTO(productoResponseDTO.especificaciones);
+    this.especificaciones = new EspecificacionesDTO(
+      productoResponseDTO.especificaciones
+    );
     this.caracteristicas = productoResponseDTO.caracteristicas;
     this.imagenes = productoResponseDTO.imagenes;
     this.videos = productoResponseDTO.videos;

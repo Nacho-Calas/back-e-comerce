@@ -31,19 +31,19 @@ type ProductoConstructorParams = {
   id: UUID;
   nombre: string;
   descripcion: string;
-  precio: number; // precio en centavos para evitar problemas de decimales
-  precioOriginal?: number; // para descuentos
+  precio?: number | null; // precio en centavos para evitar problemas de decimales, puede ser nulo
+  precioOriginal?: number | null; // para descuentos, puede ser nulo
   estado: EstadoProductoEnum;
   categoria: CategoriaProductoEnum;
-  informacionEnvio: InformacionEnvio;
+  informacionEnvio?: InformacionEnvio | null; // información de envío, puede ser nula
   destacado: boolean;
   stock: number;
-  stockMinimo: number;
-  especificaciones: Especificaciones;
-  caracteristicas: string[];
-  imagenes: string[];
-  videos?: string[];
-  manuales?: string[];
+  stockMinimo: number; // stock mínimo para alertas de reposición
+  especificaciones?: Especificaciones | null; // especificaciones técnicas, puede ser nula
+  caracteristicas?: string[] | null; // características del producto, puede ser nula
+  imagenes: string[]; // imágenes del producto, obligatorio al menos 1
+  videos?: string[] | null; // videos del producto, puede ser nulo
+  manuales?: string[] | null; // manuales del producto, puede ser nulo
   activo: boolean;
   fechaCreacion: string;
   fechaActualizacion: string;
@@ -53,19 +53,19 @@ export class Producto {
   private id: UUID;
   private nombre: string;
   private descripcion: string;
-  private precio: number;
-  private precioOriginal?: number;
+  private precio?: number | null;
+  private precioOriginal?: number | null;
   private estado: EstadoProductoEnum;
   private categoria: CategoriaProductoEnum;
-  private informacionEnvio: InformacionEnvio;
+  private informacionEnvio?: InformacionEnvio | null;
   private destacado: boolean;
   private stock: number;
   private stockMinimo: number;
-  private especificaciones: Especificaciones;
-  private caracteristicas: string[];
+  private especificaciones?: Especificaciones | null;
+  private caracteristicas?: string[] | null;
   private imagenes: string[];
-  private videos?: string[];
-  private manuales?: string[];
+  private videos?: string[] | null;
+  private manuales?: string[] | null;
   private activo: boolean;
   private fechaCreacion: string;
   private fechaActualizacion: string;
@@ -74,19 +74,19 @@ export class Producto {
     this.id = params.id;
     this.nombre = params.nombre;
     this.descripcion = params.descripcion;
-    this.precio = params.precio;
-    this.precioOriginal = params.precioOriginal;
+    this.precio = params.precio ?? null;
+    this.precioOriginal = params.precioOriginal ?? null;
     this.estado = params.estado;
     this.categoria = params.categoria;
-    this.informacionEnvio = params.informacionEnvio;
+    this.informacionEnvio = params.informacionEnvio ?? null;
     this.destacado = params.destacado;
     this.stock = params.stock;
     this.stockMinimo = params.stockMinimo;
-    this.especificaciones = params.especificaciones;
-    this.caracteristicas = params.caracteristicas;
+    this.especificaciones = params.especificaciones ?? null;
+    this.caracteristicas = params.caracteristicas ?? null;
     this.imagenes = params.imagenes;
-    this.videos = params.videos;
-    this.manuales = params.manuales;
+    this.videos = params.videos ?? null;
+    this.manuales = params.manuales ?? null;
     this.activo = params.activo;
     this.fechaCreacion = params.fechaCreacion;
     this.fechaActualizacion = params.fechaActualizacion;
@@ -105,20 +105,22 @@ export class Producto {
     return this.descripcion;
   }
 
-  getPrecio(): number {
+  getPrecio(): number | null | undefined {
     return this.precio;
   }
 
-  getPrecioOriginal(): number | undefined {
+  getPrecioOriginal(): number | null | undefined {
     return this.precioOriginal;
   }
 
   getPrecioFormateado(): string {
+    if (this.precio === null || this.precio === undefined)
+      return "Precio no disponible";
     return `$${(this.precio / 100).toFixed(2)}`;
   }
 
   getDescuento(): number {
-    if (!this.precioOriginal) return 0;
+    if (!this.precioOriginal || !this.precio) return 0;
     return Math.round(
       ((this.precioOriginal - this.precio) / this.precioOriginal) * 100
     );
@@ -132,7 +134,7 @@ export class Producto {
     return this.categoria;
   }
 
-  getInformacionEnvio(): InformacionEnvio {
+  getInformacionEnvio(): InformacionEnvio | null | undefined {
     return this.informacionEnvio;
   }
 
@@ -160,11 +162,11 @@ export class Producto {
     return this.stock <= this.stockMinimo;
   }
 
-  getEspecificaciones(): Especificaciones {
+  getEspecificaciones(): Especificaciones | null | undefined {
     return this.especificaciones;
   }
 
-  getCaracteristicas(): string[] {
+  getCaracteristicas(): string[] | null | undefined {
     return this.caracteristicas;
   }
 
@@ -172,11 +174,11 @@ export class Producto {
     return this.imagenes;
   }
 
-  getVideos(): string[] | undefined {
+  getVideos(): string[] | null | undefined {
     return this.videos;
   }
 
-  getManuales(): string[] | undefined {
+  getManuales(): string[] | null | undefined {
     return this.manuales;
   }
 

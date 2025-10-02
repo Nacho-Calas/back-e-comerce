@@ -39,23 +39,71 @@ export class ProductoService
    * Crear un nuevo producto
    */
   async createProducto(dto: CreateProductoDTO): Promise<ProductoDTO> {
-    this.getLogger().info({
-      message: "Iniciando creación de producto",
-      context: this.getContext(),
-      metadata: { nombre: dto.nombre, categoria: dto.categoria },
-    });
+    try {
+      this.getLogger().info({
+        message: "Iniciando creación de producto",
+        context: this.getContext(),
+        metadata: { nombre: dto.nombre, categoria: dto.categoria },
+      });
 
-    const productoPort = this.getPort("productoPort");
-    const producto = ProductoFactory.create(dto);
-    await productoPort.createProducto(producto);
+      console.log("=== PRODUCTO SERVICE - CREATE PRODUCTO ===");
+      console.log("DTO received:", JSON.stringify({
+        nombre: dto.nombre,
+        categoria: dto.categoria,
+        precio: dto.precio,
+        estado: dto.estado
+      }, null, 2));
 
-    this.getLogger().info({
-      message: "Producto creado exitosamente",
-      context: this.getContext(),
-      metadata: { productoId: producto.getId().getValue() },
-    });
+      console.log("Getting productoPort...");
+      const productoPort = this.getPort("productoPort");
+      console.log("ProductoPort obtained successfully");
 
-    return ProductoMapper.toDTO(producto);
+      console.log("Creating producto entity using ProductoFactory...");
+      const producto = ProductoFactory.create(dto);
+      console.log("Producto entity created:", JSON.stringify({
+        id: producto.getId().getValue(),
+        nombre: producto.getNombre(),
+        categoria: producto.getCategoria(),
+        precio: producto.getPrecio()
+      }, null, 2));
+
+      console.log("Calling productoPort.createProducto...");
+      await productoPort.createProducto(producto);
+      console.log("Producto created in port successfully");
+
+      console.log("Converting producto to DTO...");
+      const result = ProductoMapper.toDTO(producto);
+      console.log("DTO conversion successful");
+
+      this.getLogger().info({
+        message: "Producto creado exitosamente",
+        context: this.getContext(),
+        metadata: { productoId: producto.getId().getValue() },
+      });
+
+      console.log("=== PRODUCTO SERVICE - SUCCESS ===");
+      return result;
+    } catch (error) {
+      console.log("=== PRODUCTO SERVICE - ERROR ===");
+      console.error("Error in ProductoService.createProducto:", error);
+      console.error("Error details:", {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : 'No stack trace',
+        name: error instanceof Error ? error.name : 'Unknown error type'
+      });
+
+      this.getLogger().error({
+        message: "Error creando producto en servicio",
+        context: this.getContext(),
+        metadata: { 
+          nombre: dto.nombre,
+          categoria: dto.categoria,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        },
+      });
+
+      throw error;
+    }
   }
 
   /**

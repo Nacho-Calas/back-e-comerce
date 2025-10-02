@@ -129,15 +129,17 @@ export class ProductoMapper {
     const especificacionesFiltradas: {
       [key: string]: string | number | boolean;
     } = {};
-    Object.entries(especificaciones).forEach(([key, value]) => {
-      if (value !== undefined) {
-        if (Array.isArray(value)) {
-          especificacionesFiltradas[key] = value.join(", ");
-        } else {
-          especificacionesFiltradas[key] = value;
+    if (especificaciones) {
+      Object.entries(especificaciones).forEach(([key, value]) => {
+        if (value !== undefined) {
+          if (Array.isArray(value)) {
+            especificacionesFiltradas[key] = value.join(", ");
+          } else {
+            especificacionesFiltradas[key] = value;
+          }
         }
-      }
-    });
+      });
+    }
 
     const dtoParams: any = {
       id: producto.getId().getValue(),
@@ -146,17 +148,24 @@ export class ProductoMapper {
       precio: producto.getPrecio(),
       estado: producto.getEstado(),
       categoria: producto.getCategoria(),
-      informacionEnvio: new InformacionEnvioDTO({
-        peso: informacionEnvio.peso,
-        dimensiones: informacionEnvio.dimensiones,
-        fragil: informacionEnvio.fragil,
-        requiereFirma: informacionEnvio.requiereFirma,
-      }),
+      informacionEnvio: informacionEnvio
+        ? new InformacionEnvioDTO({
+            peso: informacionEnvio.peso,
+            dimensiones: informacionEnvio.dimensiones,
+            fragil: informacionEnvio.fragil,
+            requiereFirma: informacionEnvio.requiereFirma,
+          })
+        : {
+            peso: 0,
+            dimensiones: { largo: 0, ancho: 0, alto: 0 },
+            fragil: false,
+            requiereFirma: false,
+          },
       destacado: producto.isDestacado(),
       stock: producto.getStock(),
       stockMinimo: producto.getStockMinimo(),
       especificaciones: new EspecificacionesDTO(especificacionesFiltradas),
-      caracteristicas: producto.getCaracteristicas(),
+      caracteristicas: producto.getCaracteristicas() || [],
       imagenes: producto.getImagenes(),
       activo: producto.isActivo(),
       fechaCreacion: producto.getFechaCreacion(),

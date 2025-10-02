@@ -16,7 +16,11 @@ export const createProducto = async (
 ): Promise<APIGatewayProxyResultV2> => {
   const productoController = new ProductoController();
   try {
+    console.log("=== PRODUCTO CREATION START ===");
+    console.log("Event received:", JSON.stringify(event, null, 2));
+
     if (!event.body) {
+      console.log("ERROR: No body provided in request");
       return {
         statusCode: 400,
         body: JSON.stringify({
@@ -25,9 +29,22 @@ export const createProducto = async (
       };
     }
 
-    const createDTO = new CreateProductoDTO(JSON.parse(event.body));
-    const result = await productoController.createProducto(createDTO);
+    console.log("Parsing request body...");
+    const bodyData = JSON.parse(event.body);
+    console.log("Parsed body data:", JSON.stringify(bodyData, null, 2));
 
+    console.log("Creating CreateProductoDTO...");
+    const createDTO = new CreateProductoDTO(bodyData);
+    console.log("CreateProductoDTO created successfully");
+
+    console.log("Calling productoController.createProducto...");
+    const result = await productoController.createProducto(createDTO);
+    console.log(
+      "Product created successfully:",
+      JSON.stringify(result, null, 2)
+    );
+
+    console.log("=== PRODUCTO CREATION SUCCESS ===");
     return {
       statusCode: 201,
       body: JSON.stringify({
@@ -36,6 +53,13 @@ export const createProducto = async (
       }),
     };
   } catch (error) {
+    console.log("=== PRODUCTO CREATION ERROR ===");
+    console.error("Error details:", error);
+    console.error(
+      "Error stack:",
+      error instanceof Error ? error.stack : "No stack trace"
+    );
+
     const exceptionManager = productoController.getExceptionManager();
     exceptionManager.handleException(error, productoController.getContext());
     return formatErrorResponse(

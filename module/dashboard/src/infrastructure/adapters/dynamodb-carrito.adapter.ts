@@ -24,7 +24,7 @@ export interface DynamoDBCarritoAdapterDependencies
 
 const dynamoDBCarritoAdapterDependencies: DynamoDBCarritoAdapterDependencies = {
   vars: {
-    CARRITOS_TABLE: process.env.CARRITOS_TABLE || "",
+    CARRITOS_TABLE: process.env.CARRITOS_TABLE!,
     dynamoClient: new DynamoDBClient({
       region: process.env.AWS_REGION || "us-east-2",
     }),

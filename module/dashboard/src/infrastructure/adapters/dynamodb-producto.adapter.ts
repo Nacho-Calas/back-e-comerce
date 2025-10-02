@@ -41,26 +41,74 @@ export class DynamoDBProductoAdapter
   implements IProductoPort
 {
   async createProducto(producto: Producto): Promise<void> {
-    this.getLogger().info({
-      message: "Creando producto en DynamoDB",
-      context: this.getContext(),
-      metadata: { productoId: producto.getId().getValue() },
-    });
+    try {
+      this.getLogger().info({
+        message: "Creando producto en DynamoDB",
+        context: this.getContext(),
+        metadata: { productoId: producto.getId().getValue() },
+      });
 
-    const item = ProductoMapper.toDynamoDB(producto);
+      console.log("=== DYNAMODB ADAPTER - CREATE PRODUCTO ===");
+      console.log(
+        "Producto entity received:",
+        JSON.stringify(
+          {
+            id: producto.getId().getValue(),
+            nombre: producto.getNombre(),
+            categoria: producto.getCategoria(),
+            precio: producto.getPrecio(),
+          },
+          null,
+          2
+        )
+      );
 
-    await this.getVar("dynamoClient").send(
-      new PutItemCommand({
-        TableName: this.getVar("PRODUCTOS_TABLE"),
-        Item: item,
-      })
-    );
+      console.log("Converting producto to DynamoDB format...");
+      const item = ProductoMapper.toDynamoDB(producto);
+      console.log("DynamoDB item created:", JSON.stringify(item, null, 2));
 
-    this.getLogger().info({
-      message: "Producto creado exitosamente en DynamoDB",
-      context: this.getContext(),
-      metadata: { productoId: producto.getId().getValue() },
-    });
+      console.log("Table name:", this.getVar("PRODUCTOS_TABLE"));
+      console.log("AWS Region:", process.env.AWS_REGION);
+
+      console.log("Sending PutItemCommand to DynamoDB...");
+      const result = await this.getVar("dynamoClient").send(
+        new PutItemCommand({
+          TableName: this.getVar("PRODUCTOS_TABLE"),
+          Item: item,
+        })
+      );
+      console.log(
+        "DynamoDB PutItemCommand result:",
+        JSON.stringify(result, null, 2)
+      );
+
+      this.getLogger().info({
+        message: "Producto creado exitosamente en DynamoDB",
+        context: this.getContext(),
+        metadata: { productoId: producto.getId().getValue() },
+      });
+
+      console.log("=== DYNAMODB ADAPTER - SUCCESS ===");
+    } catch (error) {
+      console.log("=== DYNAMODB ADAPTER - ERROR ===");
+      console.error("Error creating producto in DynamoDB:", error);
+      console.error("Error details:", {
+        message: error instanceof Error ? error.message : "Unknown error",
+        stack: error instanceof Error ? error.stack : "No stack trace",
+        name: error instanceof Error ? error.name : "Unknown error type",
+      });
+
+      this.getLogger().error({
+        message: "Error creando producto en DynamoDB",
+        context: this.getContext(),
+        metadata: {
+          productoId: producto.getId().getValue(),
+          error: error instanceof Error ? error.message : "Unknown error",
+        },
+      });
+
+      throw error;
+    }
   }
 
   async getProductoById(id: string): Promise<Producto | null> {
