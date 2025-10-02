@@ -5,9 +5,9 @@ import {
 } from "@hex-lib/core";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { QueryCommand } from "@aws-sdk/client-dynamodb";
-import { UserMapper } from "@/auth/src/application/mappers/user.mapper";
-import { User } from "@/auth/src/domain/entities/user.entity";
-import { IUserRepositoryPort } from "@/auth/src/infrastructure/ports/user_repository.port";
+import { UserMapper } from "@/auth/application/mappers/user.mapper";
+import { User } from "@/auth/domain/entities/user.entity";
+import { IUserRepositoryPort } from "@/auth/infrastructure/ports/user_repository.port";
 
 export interface UserDynamoAdapterDependencies
   extends Partial<AdapterDependencies> {

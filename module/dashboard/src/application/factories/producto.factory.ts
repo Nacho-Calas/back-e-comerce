@@ -1,4 +1,4 @@
-import { Producto } from "@/dashboard/src/domain/entities/producto.entity";
+import { Producto } from "@/dashboard/domain/entities/producto.entity";
 import { CreateProductoDTO } from "../dtos/producto.dto";
 import { UUID } from "@hex-lib/core";
 

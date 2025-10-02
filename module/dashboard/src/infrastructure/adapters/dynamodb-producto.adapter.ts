@@ -12,10 +12,10 @@ import {
   ScanCommand,
   QueryCommand,
 } from "@aws-sdk/client-dynamodb";
-import { ProductoMapper } from "@/dashboard/application/mappers/producto.mapper";
-import { Producto } from "@/dashboard/domain/entities/producto.entity";
-import { IProductoPort } from "@/dashboard/infrastructure/ports/producto_port";
-import { CategoriaProductoEnum } from "@/dashboard/domain/enums/categoria_producto.enum";
+import { ProductoMapper } from "@/dashboard/src/application/mappers/producto.mapper";
+import { Producto } from "@/dashboard/src/domain/entities/producto.entity";
+import { IProductoPort } from "@/dashboard/src/infrastructure/ports/producto_port";
+import { CategoriaProductoEnum } from "@/dashboard/src/domain/enums/categoria_producto.enum";
 
 export interface DynamoDBProductoAdapterDependencies
   extends Partial<AdapterDependencies> {

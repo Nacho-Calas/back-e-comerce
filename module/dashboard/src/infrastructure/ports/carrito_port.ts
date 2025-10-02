@@ -1,5 +1,5 @@
 import { IPort } from "@hex-lib/core";
-import { Carrito } from "@/dashboard/src/domain/entities/carrito.entity";
+import { Carrito } from "@/dashboard/domain/entities/carrito.entity";
 
 export interface ICarritoPort extends IPort {
   createCarrito(carrito: Carrito): Promise<void>;

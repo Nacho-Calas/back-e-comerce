@@ -1,5 +1,5 @@
 import { UUID } from "@hex-lib/core";
-import { Carrito } from "@/dashboard/src/domain/entities/carrito.entity";
+import { Carrito } from "@/dashboard/domain/entities/carrito.entity";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";

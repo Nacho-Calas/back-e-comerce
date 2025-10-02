@@ -70,7 +70,7 @@ export class UpdateCarritoDTO {
   constructor(updateCarritoDTO: UpdateCarritoDTO) {
     this.id = updateCarritoDTO.id;
     this.usuarioId = updateCarritoDTO.usuarioId;
-    this.items = updateCarritoDTO.items.map(item => new ItemCarritoDTO(item));
+    this.items = updateCarritoDTO.items.map((item) => new ItemCarritoDTO(item));
   }
 }
 
@@ -138,7 +138,9 @@ export class CarritoDTO {
   constructor(carritoResponseDTO: CarritoDTO) {
     this.id = carritoResponseDTO.id;
     this.usuarioId = carritoResponseDTO.usuarioId;
-    this.items = carritoResponseDTO.items.map(item => new ItemCarritoDTO(item));
+    this.items = carritoResponseDTO.items.map(
+      (item) => new ItemCarritoDTO(item)
+    );
     this.fechaCreacion = carritoResponseDTO.fechaCreacion;
     this.fechaActualizacion = carritoResponseDTO.fechaActualizacion;
   }

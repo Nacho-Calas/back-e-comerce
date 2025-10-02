@@ -1,5 +1,5 @@
 import { UUID } from "@hex-lib/core";
-import { Cliente } from "@/dashboard/src/domain/entities/cliente.entity";
+import { Cliente } from "@/dashboard/domain/entities/cliente.entity";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";

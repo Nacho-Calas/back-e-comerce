@@ -3,7 +3,6 @@ import {
   ProductoDTO,
   UpdateProductoDTO,
 } from "@/dashboard/application/dtos/producto.dto";
-import { ProductoNotFoundException } from "@/dashboard/application/exceptions/producto_not_found.exception";
 import { ProductoService } from "@/dashboard/application/services/producto.service";
 import {
   IContextuable,

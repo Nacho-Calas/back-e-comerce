@@ -3,13 +3,13 @@ import {
   ServiceDecorator,
   type ServiceDependencies,
 } from "@hex-lib/core";
-import { LoginInputDTO } from "@/auth/src/application/dtos/login_input.dto";
-import { LoginOutputDTO } from "@/auth/src/application/dtos/login_output.dto";
-import { UserDynamoAdapter } from "@/auth/src/infrastructure/adapters/user_dynamo.adapter";
-import { IUserRepositoryPort } from "@/auth/src/infrastructure/ports/user_repository.port";
-import { UserNotFoundException } from "@/auth/src/application/exceptions/user_not_found.exception";
-import { HashService } from "@/auth/src/application/services/hash.service";
-import { JwtService } from "@/auth/src/application/services/jwt.service";
+import { LoginInputDTO } from "@/auth/application/dtos/login_input.dto";
+import { LoginOutputDTO } from "@/auth/application/dtos/login_output.dto";
+import { UserDynamoAdapter } from "@/auth/infrastructure/adapters/user_dynamo.adapter";
+import { IUserRepositoryPort } from "@/auth/infrastructure/ports/user_repository.port";
+import { UserNotFoundException } from "@/auth/application/exceptions/user_not_found.exception";
+import { HashService } from "@/auth/application/services/hash.service";
+import { JwtService } from "@/auth/application/services/jwt.service";
 
 export interface AuthServiceDependencies extends Partial<ServiceDependencies> {
   ports: {

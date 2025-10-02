@@ -3,9 +3,9 @@ import {
   AdapterDecorator,
   type AdapterDependencies,
 } from "@hex-lib/core";
-import { AuthService } from "@/auth/src/application/services/auth.service";
-import { LoginInputDTO } from "@/auth/src/application/dtos/login_input.dto";
-import { LoginOutputDTO } from "@/auth/src/application/dtos/login_output.dto";
+import { AuthService } from "@/auth/application/services/auth.service";
+import { LoginInputDTO } from "@/auth/application/dtos/login_input.dto";
+import { LoginOutputDTO } from "@/auth/application/dtos/login_output.dto";
 
 export interface AuthControllerDependencies
   extends Partial<AdapterDependencies> {

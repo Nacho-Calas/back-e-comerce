@@ -7,7 +7,6 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   PutItemCommand,
   GetItemCommand,
-  UpdateItemCommand,
   DeleteItemCommand,
   QueryCommand,
 } from "@aws-sdk/client-dynamodb";

@@ -1,5 +1,5 @@
 import { UUID } from "@hex-lib/core";
-import { Orden } from "@/dashboard/src/domain/entities/orden.entity";
+import { Orden } from "@/dashboard/domain/entities/orden.entity";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";

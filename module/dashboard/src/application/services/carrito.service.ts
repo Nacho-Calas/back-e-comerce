@@ -6,20 +6,19 @@ import {
   ILoggeable,
   IThrowable,
 } from "@hex-lib/core";
-import { Carrito } from "@/dashboard/src/domain/entities/carrito.entity";
-import { CarritoMapper } from "@/dashboard/src/application/mappers/carrito.mapper";
+import { Carrito } from "@/dashboard/domain/entities/carrito.entity";
+import { CarritoMapper } from "@/dashboard/application/mappers/carrito.mapper";
 import {
   CreateCarritoDTO,
-  UpdateCarritoDTO,
   AgregarItemCarritoDTO,
   ActualizarCantidadItemDTO,
   EliminarItemCarritoDTO,
   CarritoDTO,
-} from "@/dashboard/src/application/dtos/carrito.dto";
-import { ICarritoPort } from "@/dashboard/src/infrastructure/ports/carrito_port";
-import { IProductoPort } from "@/dashboard/src/infrastructure/ports/producto_port";
-import { DynamoDBCarritoAdapter } from "@/dashboard/src/infrastructure/adapters/dynamodb-carrito.adapter";
-import { DynamoDBProductoAdapter } from "@/dashboard/src/infrastructure/adapters/dynamodb-producto.adapter";
+} from "@/dashboard/application/dtos/carrito.dto";
+import { ICarritoPort } from "@/dashboard/infrastructure/ports/carrito_port";
+import { IProductoPort } from "@/dashboard/infrastructure/ports/producto_port";
+import { DynamoDBCarritoAdapter } from "@/dashboard/infrastructure/adapters/dynamodb-carrito.adapter";
+import { DynamoDBProductoAdapter } from "@/dashboard/infrastructure/adapters/dynamodb-producto.adapter";
 
 interface CarritoServiceDependencies extends Partial<ServiceDependencies> {
   ports: {
@@ -170,7 +169,9 @@ export class CarritoService
       precio: producto.getPrecio(),
       cantidad: dto.item.cantidad,
       imagen: producto.getImagenes()[0],
-      especificaciones: producto.getEspecificaciones(),
+      especificaciones: producto.getEspecificaciones() as {
+        [key: string]: string | number | boolean;
+      },
     });
 
     // Actualizar carrito en la base de datos

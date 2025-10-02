@@ -3,7 +3,7 @@ import {
   AdapterDecorator,
   type AdapterDependencies,
 } from "@hex-lib/core";
-import { IWhatsAppPort } from "@/dashboard/infrastructure/ports/whatsapp_port";
+import { IWhatsAppPort } from "@/dashboard/src/infrastructure/ports/whatsapp_port";
 
 export interface WhatsAppAdapterDependencies
   extends Partial<AdapterDependencies> {

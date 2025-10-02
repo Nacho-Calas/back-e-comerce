@@ -182,7 +182,9 @@ export class Orden {
 
   // Métodos de estado
   puedeCancelar(): boolean {
-    return [EstadoOrdenEnum.PENDIENTE, EstadoOrdenEnum.CONFIRMADA].includes(this.estado);
+    return [EstadoOrdenEnum.PENDIENTE, EstadoOrdenEnum.CONFIRMADA].includes(
+      this.estado
+    );
   }
 
   puedeDevolver(): boolean {

@@ -1,5 +1,5 @@
-import { WhatsAppService } from "@/dashboard/application/services/whatsapp.service";
-import { CarritoService } from "@/dashboard/application/services/carrito.service";
+import { WhatsAppService } from "@/dashboard/src/application/services/whatsapp.service";
+import { CarritoService } from "@/dashboard/src/application/services/carrito.service";
 import {
   IContextuable,
   ILoggeable,
@@ -124,8 +124,8 @@ export class WhatsAppController
 
     const whatsappService = this.getService("whatsappService");
 
-    const numeroWhatsApp = whatsappService.getVar("whatsappNumber");
-    const nombreEmpresa = whatsappService.getVar("companyName");
+    const numeroWhatsApp = process.env.WHATSAPP_NUMBER || "";
+    const nombreEmpresa = process.env.COMPANY_NAME || "Depotix";
 
     this.getLogger().info({
       message: "Configuración de WhatsApp obtenida exitosamente",

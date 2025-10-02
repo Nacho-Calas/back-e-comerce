@@ -1,22 +1,47 @@
 service: back-e-comerce
 
-frameworkVersion: "3"
+frameworkVersion: 4.4.x
 
 provider:
   name: aws
-  runtime: nodejs18.x
-  stage: ${opt:stage, 'dev'}
+  runtime: nodejs22.x
   region: us-east-2
-  environment:
-    NODE_ENV: ${self:provider.stage}
-    USERS_TABLE: ${self:service}-users-${self:provider.stage}
-    PRODUCTOS_TABLE: ${self:service}-productos-${self:provider.stage}
-    CARRITOS_TABLE: ${self:service}-carritos-${self:provider.stage}
-    JWT_SECRET: ${env:JWT_SECRET}
-    SALT_ROUNDS: 10
-    WHATSAPP_NUMBER: ${env:WHATSAPP_NUMBER}
-    COMPANY_NAME: ${env:COMPANY_NAME, 'Depotix'}
-    AWS_REGION: ${self:provider.region}
+  stage: ${opt:stage, 'dev'}
+
+  # CORS Global Configuration for HTTP API (V2)
+  httpApi:
+    cors:
+      allowedOrigins:
+        - "*"
+      allowedHeaders:
+        - Content-Type
+        - X-Amz-Date
+        - Authorization
+        - X-Api-Key
+        - X-Amz-Security-Token
+        - X-Amz-User-Agent
+      allowedMethods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+      allowCredentials: false
+
+    # Lambda Authorizer Configuration
+    authorizers:
+      lambdaAuthorizer:
+        type: request
+        functionName: authorize
+
+  # Lambda settings
+  memorySize: 512
+  architecture: arm64
+
+  # Log settings
+  logRetentionInDays: 7
+
+  # IAM Role
   iam:
     role:
       statements:
@@ -29,193 +54,232 @@ provider:
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
           Resource:
-            - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:service}-*"
+            # Auth module tables
+            - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.usersTableName}"
+            - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.usersTableName}/index/*"
+            # Dashboard module tables
+            - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.productosTableName}"
+            - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.carritosTableName}"
+            - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.productosTableName}/index/*"
+            - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.carritosTableName}/index/*"
         - Effect: Allow
           Action:
-            - s3:GetObject
             - s3:PutObject
+            - s3:GetObject
             - s3:DeleteObject
+            - s3:PutObjectAcl
           Resource:
-            - "arn:aws:s3:::${self:service}-files-${self:provider.stage}/*"
+            - "arn:aws:s3:::${self:custom.filesBucketName}/*"
+
+  # Environment Variables
+  environment:
+    # Auth module variables
+    DISCORD_WEBHOOK_URL: ${env:DISCORD_WEBHOOK_URL, ''}
+    JWT_SECRET: ${env:JWT_SECRET, 'ecomerce2026'}
+    USERS_TABLE: ${self:custom.usersTableName}
+    SALT_ROUNDS: 10
+    # Dashboard module variables
+    PRODUCTOS_TABLE: ${self:custom.productosTableName}
+    CARRITOS_TABLE: ${self:custom.carritosTableName}
+    WHATSAPP_NUMBER: ${env:WHATSAPP_NUMBER, '+5491123456789'}
+    COMPANY_NAME: ${env:COMPANY_NAME, 'Depotix'}
+    # S3 configuration
+    S3_BUCKET_NAME: ${self:custom.filesBucketName}
+    AWS_REGION: ${self:provider.region}
+
+custom:
+  # Auth module tables
+  usersTableName: ${self:service}-users-${sls:stage}
+  # Dashboard module tables
+  productosTableName: ${self:service}-productos-${sls:stage}
+  carritosTableName: ${self:service}-carritos-${sls:stage}
+  # S3 bucket
+  filesBucketName: ${self:service}-files-${sls:stage}
 
 functions:
-  # Auth functions
+  # ========================================
+  # AUTH MODULE FUNCTIONS
+  # ========================================
+
+  # Authorizer function
+  authorize:
+    handler: module/auth/exports/authorizer.authorize
+    timeout: 10
+
   login:
     handler: module/auth/exports/login.login
     events:
-      - http:
+      - httpApi:
           path: /auth/login
-          method: post
-          cors: true
+          method: POST
 
-  authorize:
-    handler: module/auth/exports/authorizer.authorize
+  # ========================================
+  # DASHBOARD MODULE FUNCTIONS
+  # ========================================
 
   # Product functions
   createProducto:
     handler: module/dashboard/exports/productos.createProducto
     events:
-      - http:
+      - httpApi:
           path: /productos
-          method: post
-          cors: true
-          authorizer: authorize
+          method: POST
+          authorizer:
+            name: lambdaAuthorizer
 
   getProductoById:
     handler: module/dashboard/exports/productos.getProductoById
     events:
-      - http:
+      - httpApi:
           path: /productos/{id}
-          method: get
-          cors: true
+          method: GET
 
   getAllProductos:
     handler: module/dashboard/exports/productos.getAllProductos
     events:
-      - http:
+      - httpApi:
           path: /productos
-          method: get
-          cors: true
+          method: GET
 
   getProductosByCategoria:
     handler: module/dashboard/exports/productos.getProductosByCategoria
     events:
-      - http:
+      - httpApi:
           path: /productos/categoria/{categoria}
-          method: get
-          cors: true
+          method: GET
 
   getProductosDestacados:
     handler: module/dashboard/exports/productos.getProductosDestacados
     events:
-      - http:
+      - httpApi:
           path: /productos/destacados
-          method: get
-          cors: true
+          method: GET
 
   buscarProductos:
     handler: module/dashboard/exports/productos.buscarProductos
     events:
-      - http:
+      - httpApi:
           path: /productos/buscar
-          method: get
-          cors: true
+          method: GET
 
   updateProducto:
     handler: module/dashboard/exports/productos.updateProducto
     events:
-      - http:
+      - httpApi:
           path: /productos
-          method: put
-          cors: true
-          authorizer: authorize
+          method: PUT
+          authorizer:
+            name: lambdaAuthorizer
 
   deleteProducto:
     handler: module/dashboard/exports/productos.deleteProducto
     events:
-      - http:
+      - httpApi:
           path: /productos/{id}
-          method: delete
-          cors: true
-          authorizer: authorize
+          method: DELETE
+          authorizer:
+            name: lambdaAuthorizer
 
   getCategorias:
     handler: module/dashboard/exports/productos.getCategorias
     events:
-      - http:
+      - httpApi:
           path: /productos/categorias
-          method: get
-          cors: true
+          method: GET
 
   # Cart functions
   createCarrito:
     handler: module/dashboard/exports/carrito.createCarrito
     events:
-      - http:
+      - httpApi:
           path: /carrito
-          method: post
-          cors: true
+          method: POST
 
   getCarritoById:
     handler: module/dashboard/exports/carrito.getCarritoById
     events:
-      - http:
+      - httpApi:
           path: /carrito/{id}
-          method: get
-          cors: true
+          method: GET
 
   getCarritoByUsuario:
     handler: module/dashboard/exports/carrito.getCarritoByUsuario
     events:
-      - http:
+      - httpApi:
           path: /carrito/usuario/{usuarioId}
-          method: get
-          cors: true
+          method: GET
 
   agregarItem:
     handler: module/dashboard/exports/carrito.agregarItem
     events:
-      - http:
+      - httpApi:
           path: /carrito/agregar-item
-          method: post
-          cors: true
+          method: POST
 
   actualizarCantidad:
     handler: module/dashboard/exports/carrito.actualizarCantidad
     events:
-      - http:
+      - httpApi:
           path: /carrito/actualizar-cantidad
-          method: put
-          cors: true
+          method: PUT
 
   eliminarItem:
     handler: module/dashboard/exports/carrito.eliminarItem
     events:
-      - http:
+      - httpApi:
           path: /carrito/eliminar-item
-          method: delete
-          cors: true
+          method: DELETE
 
   limpiarCarrito:
     handler: module/dashboard/exports/carrito.limpiarCarrito
     events:
-      - http:
+      - httpApi:
           path: /carrito/{id}/limpiar
-          method: delete
-          cors: true
+          method: DELETE
 
   # WhatsApp functions
   generarMensajePedido:
     handler: module/dashboard/exports/whatsapp.generarMensajePedido
     events:
-      - http:
+      - httpApi:
           path: /whatsapp/pedido/{carritoId}
-          method: get
-          cors: true
+          method: GET
 
   generarMensajeConsulta:
     handler: module/dashboard/exports/whatsapp.generarMensajeConsulta
     events:
-      - http:
+      - httpApi:
           path: /whatsapp/consulta/{productoId}
-          method: get
-          cors: true
+          method: GET
 
   getConfiguracionWhatsApp:
     handler: module/dashboard/exports/whatsapp.getConfiguracion
     events:
-      - http:
+      - httpApi:
           path: /whatsapp/configuracion
-          method: get
-          cors: true
+          method: GET
+
+  # ========================================
+  # ARCHIVO MODULE FUNCTIONS
+  # ========================================
+
+  generarPresignedUrl:
+    handler: module/dashboard/exports/archivo.generarPresignedUrl
+    events:
+      - httpApi:
+          path: /archivos/presigned-url
+          method: GET
 
 resources:
   Resources:
-    # DynamoDB Tables
+    # ========================================
+    # AUTH MODULE RESOURCES
+    # ========================================
     UsersTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:service}-users-${self:provider.stage}
+        TableName: ${self:custom.usersTableName}
+        BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - AttributeName: id
             AttributeType: S
@@ -231,12 +295,17 @@ resources:
                 KeyType: HASH
             Projection:
               ProjectionType: ALL
-        BillingMode: PAY_PER_REQUEST
 
+    # ========================================
+    # DASHBOARD MODULE RESOURCES
+    # ========================================
+
+    # Productos Table
     ProductosTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:service}-productos-${self:provider.stage}
+        TableName: ${self:custom.productosTableName}
+        BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - AttributeName: id
             AttributeType: S
@@ -260,12 +329,13 @@ resources:
                 KeyType: HASH
             Projection:
               ProjectionType: ALL
-        BillingMode: PAY_PER_REQUEST
 
+    # Carritos Table
     CarritosTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:service}-carritos-${self:provider.stage}
+        TableName: ${self:custom.carritosTableName}
+        BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - AttributeName: id
             AttributeType: S
@@ -281,13 +351,14 @@ resources:
                 KeyType: HASH
             Projection:
               ProjectionType: ALL
-        BillingMode: PAY_PER_REQUEST
 
-    # S3 Bucket for files
+    # ========================================
+    # S3 RESOURCES
+    # ========================================
+
     FilesBucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: ${self:service}-files-${self:provider.stage}
         PublicAccessBlockConfiguration:
           BlockPublicAcls: false
           BlockPublicPolicy: false
@@ -295,29 +366,30 @@ resources:
           RestrictPublicBuckets: false
         CorsConfiguration:
           CorsRules:
-            - AllowedHeaders:
-                - "*"
-              AllowedMethods:
-                - GET
-                - PUT
-                - POST
-                - DELETE
-                - HEAD
-              AllowedOrigins:
-                - "*"
+            - AllowedHeaders: ["*"]
+              AllowedMethods: [GET, PUT, POST, DELETE, HEAD]
+              AllowedOrigins: ["*"]
               MaxAge: 3000
+        VersioningConfiguration:
+          Status: Enabled
+        LifecycleConfiguration:
+          Rules:
+            - Id: DeleteOldVersions
+              Status: Enabled
+              NoncurrentVersionExpiration:
+                NoncurrentDays: 30
 
-  Outputs:
-    ApiGatewayRestApiId:
-      Value:
-        Ref: ApiGatewayRestApi
-      Export:
-        Name: ${self:service}-${self:provider.stage}-restApiId
-
-    ApiGatewayRestApiRootResourceId:
-      Value:
-        Fn::GetAtt:
-          - ApiGatewayRestApi
-          - RootResourceId
-      Export:
-        Name: ${self:service}-${self:provider.stage}-rootResourceId
+    # Bucket Policy para acceso público de lectura
+    FilesBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket:
+          Ref: FilesBucket
+        PolicyDocument:
+          Statement:
+            - Sid: PublicReadGetObject
+              Effect: Allow
+              Principal: "*"
+              Action: s3:GetObject
+              Resource:
+                - Fn::Join: ["", [Fn::GetAtt: [FilesBucket, Arn], "/*"]]

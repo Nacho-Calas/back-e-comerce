@@ -5,7 +5,6 @@ import {
   IsArray,
   ValidateNested,
   IsEmail,
-  IsObject,
 } from "class-validator";
 
 export class DireccionDTO {
@@ -112,12 +111,15 @@ export class CreateClienteDTO {
     this.telefono = createClienteDTO.telefono;
     this.fechaNacimiento = createClienteDTO.fechaNacimiento;
     this.genero = createClienteDTO.genero;
-    this.direcciones = createClienteDTO.direcciones?.map(dir => new DireccionDTO(dir)) || [];
-    this.preferencias = createClienteDTO.preferencias ? new PreferenciasDTO(createClienteDTO.preferencias) : {
-      notificacionesEmail: true,
-      notificacionesSMS: false,
-      newsletter: true,
-    };
+    this.direcciones =
+      createClienteDTO.direcciones?.map((dir) => new DireccionDTO(dir)) || [];
+    this.preferencias = createClienteDTO.preferencias
+      ? new PreferenciasDTO(createClienteDTO.preferencias)
+      : {
+          notificacionesEmail: true,
+          notificacionesSMS: false,
+          newsletter: true,
+        };
   }
 }
 
@@ -170,8 +172,12 @@ export class UpdateClienteDTO {
     this.telefono = updateClienteDTO.telefono;
     this.fechaNacimiento = updateClienteDTO.fechaNacimiento;
     this.genero = updateClienteDTO.genero;
-    this.direcciones = updateClienteDTO.direcciones?.map(dir => new DireccionDTO(dir));
-    this.preferencias = updateClienteDTO.preferencias ? new PreferenciasDTO(updateClienteDTO.preferencias) : undefined;
+    this.direcciones = updateClienteDTO.direcciones?.map(
+      (dir) => new DireccionDTO(dir)
+    );
+    this.preferencias = updateClienteDTO.preferencias
+      ? new PreferenciasDTO(updateClienteDTO.preferencias)
+      : undefined;
     this.activo = updateClienteDTO.activo;
   }
 }
@@ -228,7 +234,9 @@ export class ClienteDTO {
     this.telefono = clienteResponseDTO.telefono;
     this.fechaNacimiento = clienteResponseDTO.fechaNacimiento;
     this.genero = clienteResponseDTO.genero;
-    this.direcciones = clienteResponseDTO.direcciones.map(dir => new DireccionDTO(dir));
+    this.direcciones = clienteResponseDTO.direcciones.map(
+      (dir) => new DireccionDTO(dir)
+    );
     this.preferencias = new PreferenciasDTO(clienteResponseDTO.preferencias);
     this.fechaCreacion = clienteResponseDTO.fechaCreacion;
     this.fechaActualizacion = clienteResponseDTO.fechaActualizacion;
