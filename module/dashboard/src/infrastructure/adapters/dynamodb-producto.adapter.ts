@@ -275,19 +275,45 @@ export class DynamoDBProductoAdapter
       metadata: { termino },
     });
 
+    // Obtener todos los productos activos
     const result = await this.getVar("dynamoClient").send(
       new ScanCommand({
         TableName: this.getVar("PRODUCTOS_TABLE"),
-        FilterExpression:
-          "contains(nombre, :termino) OR contains(descripcion, :termino) AND activo = :activo",
+        FilterExpression: "activo = :activo",
         ExpressionAttributeValues: {
-          ":termino": { S: termino },
           ":activo": { S: "true" },
         },
       })
     );
 
     if (!result.Items || result.Items.length === 0) {
+      this.getLogger().warn({
+        message: "No se encontraron productos activos",
+        context: this.getContext(),
+      });
+      return null;
+    }
+
+    // Convertir a entidades Producto
+    const todosLosProductos = result.Items.map((item) =>
+      ProductoMapper.fromDynamoDB(item)
+    );
+
+    // Filtrar en memoria con búsqueda case-insensitive
+    const terminoLower = termino.toLowerCase();
+    const productosFiltrados = todosLosProductos.filter((producto) => {
+      const nombre = producto.getNombre().toLowerCase();
+      const descripcion = producto.getDescripcion().toLowerCase();
+      const categoria = producto.getCategoria().toLowerCase();
+      
+      return (
+        nombre.includes(terminoLower) ||
+        descripcion.includes(terminoLower) ||
+        categoria.includes(terminoLower)
+      );
+    });
+
+    if (productosFiltrados.length === 0) {
       this.getLogger().warn({
         message: "No se encontraron productos para el término de búsqueda",
         context: this.getContext(),
@@ -296,17 +322,13 @@ export class DynamoDBProductoAdapter
       return null;
     }
 
-    const productos = result.Items.map((item) =>
-      ProductoMapper.fromDynamoDB(item)
-    );
-
     this.getLogger().info({
       message: "Búsqueda de productos completada exitosamente",
       context: this.getContext(),
-      metadata: { termino, count: productos.length },
+      metadata: { termino, count: productosFiltrados.length },
     });
 
-    return productos;
+    return productosFiltrados;
   }
 
   async updateProducto(producto: Producto): Promise<void> {

@@ -32,7 +32,7 @@ export class S3ArchivoAdapter
   constructor() {
     super();
     this.s3Client = new S3Client({
-      region: this.getVar("AWS_REGION"),
+      region: process.env.AWS_REGION || "us-east-2",
     });
   }
 
@@ -61,7 +61,7 @@ export class S3ArchivoAdapter
 
     // Crear comando para subir objeto
     const command = new PutObjectCommand({
-      Bucket: this.getVar("S3_BUCKET_NAME"),
+      Bucket: process.env.S3_BUCKET_NAME || "back-e-comerce-files-dev",
       Key: key,
       ContentType: this.getContentType(extension),
     });
@@ -72,9 +72,9 @@ export class S3ArchivoAdapter
     });
 
     // Generar URL pública
-    const urlPublica = `https://${this.getVar(
-      "S3_BUCKET_NAME"
-    )}.s3.${this.getVar("AWS_REGION")}.amazonaws.com/${key}`;
+    const urlPublica = `https://${
+      process.env.S3_BUCKET_NAME || "back-e-comerce-files-dev"
+    }.s3.${process.env.AWS_REGION || "us-east-2"}.amazonaws.com/${key}`;
 
     this.getLogger().info({
       message: "Presigned URL generada exitosamente",

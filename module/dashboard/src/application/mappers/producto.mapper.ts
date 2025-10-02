@@ -25,7 +25,7 @@ export class ProductoMapper {
       estado: rawItem.estado,
       categoria: rawItem.categoria,
       informacionEnvio: rawItem.informacionEnvio,
-      destacado: rawItem.destacado === "true",
+      destacado: rawItem.destacado === "true" || rawItem.destacado === true,
       stock: rawItem.stock,
       stockMinimo: rawItem.stockMinimo,
       especificaciones: rawItem.especificaciones || {},
@@ -33,7 +33,7 @@ export class ProductoMapper {
       imagenes: rawItem.imagenes || [],
       videos: rawItem.videos,
       manuales: rawItem.manuales,
-      activo: rawItem.activo === "true",
+      activo: rawItem.activo === "true" || rawItem.activo === true,
       fechaCreacion: rawItem.fechaCreacion,
       fechaActualizacion: new Date(rawItem.fechaActualizacion).toISOString(),
     });
@@ -41,6 +41,11 @@ export class ProductoMapper {
 
   static toDynamoDB(producto: Producto): Record<string, AttributeValue> {
     const plainProducto = instanceToPlain(producto);
+    // Asegurar que el ID sea un string, no un objeto UUID
+    plainProducto.id = producto.getId().getValue();
+    // Convertir booleanos a strings para DynamoDB
+    plainProducto.destacado = producto.isDestacado().toString();
+    plainProducto.activo = producto.isActivo().toString();
     plainProducto.fechaActualizacion = new Date().toISOString();
     return marshall(plainProducto);
   }
