@@ -25,25 +25,25 @@ export class ItemCarritoDTO {
 
   @IsOptional()
   @IsString()
-  imagen?: string;
+  imagen!: string | null;
 
   @IsOptional()
   @IsObject()
-  especificaciones?: { [key: string]: string | number | boolean };
+  especificaciones!: { [key: string]: string | number | boolean } | null;
 
   constructor(itemCarritoDTO: ItemCarritoDTO) {
     this.productoId = itemCarritoDTO.productoId;
     this.nombre = itemCarritoDTO.nombre;
     this.precio = itemCarritoDTO.precio;
     this.cantidad = itemCarritoDTO.cantidad;
-    this.imagen = itemCarritoDTO.imagen;
-    this.especificaciones = itemCarritoDTO.especificaciones;
+    this.imagen = itemCarritoDTO.imagen || null;
+    this.especificaciones = itemCarritoDTO.especificaciones || null;
   }
 }
 
 export class CreateCarritoDTO {
   @IsString()
-  usuarioId!: string;
+  sessionId!: string;
 
   @IsOptional()
   @IsArray()
@@ -51,7 +51,7 @@ export class CreateCarritoDTO {
   items?: ItemCarritoDTO[];
 
   constructor(createCarritoDTO: CreateCarritoDTO) {
-    this.usuarioId = createCarritoDTO.usuarioId;
+    this.sessionId = createCarritoDTO.sessionId;
     this.items = createCarritoDTO.items || [];
   }
 }
@@ -61,7 +61,7 @@ export class UpdateCarritoDTO {
   id!: string;
 
   @IsString()
-  usuarioId!: string;
+  sessionId!: string;
 
   @IsArray()
   @ValidateNested({ each: true })
@@ -69,7 +69,7 @@ export class UpdateCarritoDTO {
 
   constructor(updateCarritoDTO: UpdateCarritoDTO) {
     this.id = updateCarritoDTO.id;
-    this.usuarioId = updateCarritoDTO.usuarioId;
+    this.sessionId = updateCarritoDTO.sessionId;
     this.items = updateCarritoDTO.items.map((item) => new ItemCarritoDTO(item));
   }
 }
@@ -123,7 +123,7 @@ export class CarritoDTO {
   id!: string;
 
   @IsString()
-  usuarioId!: string;
+  sessionId!: string;
 
   @IsArray()
   @ValidateNested({ each: true })
@@ -137,7 +137,7 @@ export class CarritoDTO {
 
   constructor(carritoResponseDTO: CarritoDTO) {
     this.id = carritoResponseDTO.id;
-    this.usuarioId = carritoResponseDTO.usuarioId;
+    this.sessionId = carritoResponseDTO.sessionId;
     this.items = carritoResponseDTO.items.map(
       (item) => new ItemCarritoDTO(item)
     );

@@ -100,17 +100,17 @@ export const getCarritoByUsuario = async (
 ): Promise<APIGatewayProxyResultV2> => {
   const carritoController = new CarritoController();
   try {
-    const usuarioId = event.pathParameters?.usuarioId;
-    if (!usuarioId) {
+    const sessionId = event.pathParameters?.sessionId;
+    if (!sessionId) {
       return {
         statusCode: 400,
         body: JSON.stringify({
-          error: "Usuario ID requerido",
+          error: "Session ID requerido",
         }),
       };
     }
 
-    const result = await carritoController.getCarritoByUsuario(usuarioId);
+    const result = await carritoController.getCarritoBySession(sessionId);
 
     if (!result) {
       return {

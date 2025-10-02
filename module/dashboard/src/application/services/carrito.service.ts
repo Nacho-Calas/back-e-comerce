@@ -46,13 +46,13 @@ export class CarritoService
     this.getLogger().info({
       message: "Creando nuevo carrito",
       context: this.getContext(),
-      metadata: { usuarioId: dto.usuarioId },
+      metadata: { sessionId: dto.sessionId },
     });
 
     const carritoPort = this.getPort("carritoPort");
     const carrito = new Carrito({
       id: require("@hex-lib/core").UUID.create(),
-      usuarioId: dto.usuarioId,
+      sessionId: dto.sessionId,
       items:
         dto.items?.map((item: any) => ({
           productoId: item.productoId,
@@ -104,17 +104,17 @@ export class CarritoService
   }
 
   /**
-   * Obtener carrito por usuario (usando sessionId como identificador)
+   * Obtener carrito por sesión (usando sessionId como identificador)
    */
-  async getCarritoByUsuario(usuarioId: string): Promise<CarritoDTO | null> {
+  async getCarritoBySession(sessionId: string): Promise<CarritoDTO | null> {
     this.getLogger().info({
-      message: "Obteniendo carrito por usuario",
+      message: "Obteniendo carrito por sesión",
       context: this.getContext(),
-      metadata: { usuarioId },
+      metadata: { sessionId },
     });
 
     const carritoPort = this.getPort("carritoPort");
-    const carrito = await carritoPort.getCarritoByUsuario(usuarioId);
+    const carrito = await carritoPort.getCarritoBySession(sessionId);
 
     if (!carrito) {
       return null;

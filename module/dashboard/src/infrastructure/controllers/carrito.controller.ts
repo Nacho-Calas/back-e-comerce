@@ -41,7 +41,7 @@ export class CarritoController
     this.getLogger().info({
       message: "Solicitud de creación de carrito recibida",
       context: this.getContext(),
-      metadata: { usuarioId: createDTO.usuarioId },
+      metadata: { sessionId: createDTO.sessionId },
     });
 
     const carritoService = this.getService("carritoService");
@@ -81,23 +81,23 @@ export class CarritoController
   }
 
   /**
-   * Obtener carrito por usuario (sessionId)
+   * Obtener carrito por sesión (sessionId)
    */
-  async getCarritoByUsuario(usuarioId: string): Promise<CarritoDTO | null> {
+  async getCarritoBySession(sessionId: string): Promise<CarritoDTO | null> {
     this.getLogger().info({
-      message: "Solicitud de obtención de carrito por usuario",
+      message: "Solicitud de obtención de carrito por sesión",
       context: this.getContext(),
-      metadata: { usuarioId },
+      metadata: { sessionId },
     });
 
     const carritoService = this.getService("carritoService");
-    const result = await carritoService.getCarritoByUsuario(usuarioId);
+    const result = await carritoService.getCarritoBySession(sessionId);
 
     if (!result) {
       this.getLogger().warn({
-        message: "Carrito no encontrado para usuario",
+        message: "Carrito no encontrado para sesión",
         context: this.getContext(),
-        metadata: { usuarioId },
+        metadata: { sessionId },
       });
     }
 

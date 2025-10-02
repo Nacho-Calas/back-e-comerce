@@ -5,13 +5,13 @@ type ItemCarrito = {
   nombre: string;
   precio: number;
   cantidad: number;
-  imagen?: string;
-  especificaciones?: { [key: string]: string | number | boolean };
+  imagen: string | null;
+  especificaciones: { [key: string]: string | number | boolean } | null;
 };
 
 type CarritoConstructorParams = {
   id: UUID;
-  usuarioId: string;
+  sessionId: string;
   items: ItemCarrito[];
   fechaCreacion: string;
   fechaActualizacion: string;
@@ -19,14 +19,14 @@ type CarritoConstructorParams = {
 
 export class Carrito {
   private id: UUID;
-  private usuarioId: string;
+  private sessionId: string;
   private items: ItemCarrito[];
   private fechaCreacion: string;
   private fechaActualizacion: string;
 
   constructor(params: CarritoConstructorParams) {
     this.id = params.id;
-    this.usuarioId = params.usuarioId;
+    this.sessionId = params.sessionId;
     this.items = params.items;
     this.fechaCreacion = params.fechaCreacion;
     this.fechaActualizacion = params.fechaActualizacion;
@@ -37,8 +37,8 @@ export class Carrito {
     return this.id;
   }
 
-  getUsuarioId(): string {
-    return this.usuarioId;
+  getSessionId(): string {
+    return this.sessionId;
   }
 
   getItems(): ItemCarrito[] {
@@ -114,8 +114,8 @@ export class Carrito {
     this.id = id;
   }
 
-  setUsuarioId(usuarioId: string): void {
-    this.usuarioId = usuarioId;
+  setSessionId(sessionId: string): void {
+    this.sessionId = sessionId;
   }
 
   setItems(items: ItemCarrito[]): void {

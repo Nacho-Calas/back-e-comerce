@@ -14,7 +14,7 @@ export class CarritoMapper {
     const rawItem = unmarshall(item);
     return new Carrito({
       id: new UUID(rawItem.id),
-      usuarioId: rawItem.usuarioId,
+      sessionId: rawItem.sessionId,
       items: rawItem.items || [],
       fechaCreacion: rawItem.fechaCreacion,
       fechaActualizacion: new Date(rawItem.fechaActualizacion).toISOString(),
@@ -24,7 +24,7 @@ export class CarritoMapper {
   static toDynamoDB(carrito: Carrito): Record<string, AttributeValue> {
     const plainCarrito = {
       id: carrito.getId().getValue(),
-      usuarioId: carrito.getUsuarioId(),
+      sessionId: carrito.getSessionId(),
       items: carrito.getItems(),
       fechaCreacion: carrito.getFechaCreacion(),
       fechaActualizacion: carrito.getFechaActualizacion(),
@@ -38,14 +38,14 @@ export class CarritoMapper {
   static toEntity(dto: UpdateCarritoDTO): Carrito {
     return new Carrito({
       id: new UUID(dto.id),
-      usuarioId: dto.usuarioId,
+      sessionId: dto.sessionId,
       items: dto.items.map((item) => ({
         productoId: item.productoId,
         nombre: item.nombre,
         precio: item.precio,
         cantidad: item.cantidad,
-        imagen: item.imagen,
-        especificaciones: item.especificaciones,
+            imagen: item.imagen ?? null,
+            especificaciones: item.especificaciones ?? null,
       })),
       fechaCreacion: new Date().toISOString(),
       fechaActualizacion: new Date().toISOString(),
@@ -58,14 +58,14 @@ export class CarritoMapper {
   ): Carrito {
     return new Carrito({
       id: existingCarrito.getId(),
-      usuarioId: dto.usuarioId,
+      sessionId: dto.sessionId,
       items: dto.items.map((item) => ({
         productoId: item.productoId,
         nombre: item.nombre,
         precio: item.precio,
         cantidad: item.cantidad,
-        imagen: item.imagen,
-        especificaciones: item.especificaciones,
+            imagen: item.imagen ?? null,
+            especificaciones: item.especificaciones ?? null,
       })),
       fechaCreacion: existingCarrito.getFechaCreacion(),
       fechaActualizacion: new Date().toISOString(),
@@ -75,7 +75,7 @@ export class CarritoMapper {
   static toDTO(carrito: Carrito): CarritoDTO {
     return new CarritoDTO({
       id: carrito.getId().getValue(),
-      usuarioId: carrito.getUsuarioId(),
+      sessionId: carrito.getSessionId(),
       items: carrito.getItems().map(
         (item) =>
           new ItemCarritoDTO({
@@ -83,8 +83,8 @@ export class CarritoMapper {
             nombre: item.nombre,
             precio: item.precio,
             cantidad: item.cantidad,
-            imagen: item.imagen,
-            especificaciones: item.especificaciones,
+            imagen: item.imagen ?? null,
+            especificaciones: item.especificaciones ?? null,
           })
       ),
       fechaCreacion: carrito.getFechaCreacion(),

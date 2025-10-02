@@ -95,20 +95,20 @@ export class DynamoDBCarritoAdapter
     return carrito;
   }
 
-  async getCarritoByUsuario(usuarioId: string): Promise<Carrito | null> {
+  async getCarritoBySession(sessionId: string): Promise<Carrito | null> {
     this.getLogger().info({
-      message: "Obteniendo carrito por usuario desde DynamoDB",
+      message: "Obteniendo carrito por sesión desde DynamoDB",
       context: this.getContext(),
-      metadata: { usuarioId },
+      metadata: { sessionId },
     });
 
     const result = await this.getVar("dynamoClient").send(
       new QueryCommand({
         TableName: this.getVar("CARRITOS_TABLE"),
         IndexName: "usuario-index",
-        KeyConditionExpression: "usuarioId = :usuarioId",
+        KeyConditionExpression: "sessionId = :sessionId",
         ExpressionAttributeValues: {
-          ":usuarioId": { S: usuarioId },
+          ":sessionId": { S: sessionId },
         },
         Limit: 1,
       })
@@ -116,9 +116,9 @@ export class DynamoDBCarritoAdapter
 
     if (!result.Items || result.Items.length === 0) {
       this.getLogger().warn({
-        message: "Carrito no encontrado para usuario",
+        message: "Carrito no encontrado para sesión",
         context: this.getContext(),
-        metadata: { usuarioId },
+        metadata: { sessionId },
       });
       return null;
     }
@@ -126,11 +126,11 @@ export class DynamoDBCarritoAdapter
     const carrito = CarritoMapper.fromDynamoDB(result.Items[0]);
 
     this.getLogger().info({
-      message: "Carrito obtenido exitosamente para usuario",
+      message: "Carrito obtenido exitosamente para sesión",
       context: this.getContext(),
       metadata: {
         carritoId: carrito.getId().getValue(),
-        usuarioId,
+        sessionId,
       },
     });
 
