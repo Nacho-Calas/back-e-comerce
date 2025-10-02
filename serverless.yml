@@ -86,7 +86,6 @@ provider:
     CONFIGURACION_TABLE: ${self:custom.configuracionTableName}
     # S3 configuration
     S3_BUCKET_NAME: ${self:custom.filesBucketName}
-    AWS_REGION: ${self:provider.region}
 
 custom:
   # Auth module tables
