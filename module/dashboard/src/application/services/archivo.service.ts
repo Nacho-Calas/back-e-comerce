@@ -29,10 +29,10 @@ export class ArchivoService
    * Generar presigned URL para subir archivo a S3
    */
   async generarPresignedUrl(
-    nombreArchivo: string,
-    tipo: "imagen" | "video" | "archivo",
+    fileName: string,
+    fileType: string,
     entidadId: string,
-    extension: string
+    tipo: "imagen" | "video" | "archivo"
   ): Promise<{
     presignedUrl: string;
     key: string;
@@ -42,18 +42,18 @@ export class ArchivoService
     this.getLogger().info({
       message: "Iniciando generación de presigned URL",
       context: this.getContext(),
-      metadata: { nombreArchivo, tipo, entidadId, extension },
+      metadata: { fileName, fileType, entidadId, tipo },
     });
 
     // Validaciones de negocio
-    this.validarParametros(nombreArchivo, tipo, entidadId, extension);
+    this.validarParametros(fileName, fileType, entidadId, tipo);
 
     const archivoPort = this.getPort("archivoPort");
     const resultado = await archivoPort.generarPresignedUrl(
-      nombreArchivo,
-      tipo,
+      fileName,
+      fileType,
       entidadId,
-      extension
+      tipo
     );
 
     this.getLogger().info({
@@ -69,29 +69,29 @@ export class ArchivoService
    * Validar parámetros de entrada
    */
   private validarParametros(
-    nombreArchivo: string,
-    tipo: string,
+    fileName: string,
+    fileType: string,
     entidadId: string,
-    extension: string
+    tipo: string
   ): void {
-    if (!nombreArchivo || nombreArchivo.trim() === "") {
+    if (!fileName || fileName.trim() === "") {
       throw new Error("El nombre del archivo es requerido");
     }
 
-    if (!tipo || !["imagen", "video", "archivo"].includes(tipo)) {
-      throw new Error("El tipo debe ser 'imagen', 'video' o 'archivo'");
+    if (!fileType || fileType.trim() === "") {
+      throw new Error("El tipo de archivo (MIME type) es requerido");
     }
 
     if (!entidadId || entidadId.trim() === "") {
       throw new Error("El ID de la entidad es requerido");
     }
 
-    if (!extension || extension.trim() === "") {
-      throw new Error("La extensión del archivo es requerida");
+    if (!tipo || !["imagen", "video", "archivo"].includes(tipo)) {
+      throw new Error("El tipo debe ser 'imagen', 'video' o 'archivo'");
     }
 
     // Validar que el nombre del archivo no contenga caracteres peligrosos
-    const nombreLimpio = nombreArchivo.trim();
+    const nombreLimpio = fileName.trim();
     if (
       nombreLimpio.includes("[object Object]") ||
       nombreLimpio.includes("undefined") ||
@@ -100,34 +100,48 @@ export class ArchivoService
       throw new Error("El nombre del archivo contiene valores inválidos");
     }
 
-    // Validar extensión
-    const extensionLimpia = extension.toLowerCase().trim();
-    const extensionesValidas = [
+    // Validar que el fileName tenga extensión
+    if (!nombreLimpio.includes(".")) {
+      throw new Error("El nombre del archivo debe incluir la extensión");
+    }
+
+    // Validar que el entidadId no contenga caracteres peligrosos
+    const entidadIdLimpio = entidadId.trim();
+    if (
+      entidadIdLimpio.includes("..") ||
+      entidadIdLimpio.includes("//") ||
+      entidadIdLimpio.startsWith("/") ||
+      entidadIdLimpio.endsWith("/")
+    ) {
+      throw new Error("El ID de la entidad contiene caracteres inválidos");
+    }
+
+    // Validar MIME type básico
+    const mimeTypesValidos = [
       // Imágenes
-      "jpg",
-      "jpeg",
-      "png",
-      "gif",
-      "webp",
-      "svg",
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+      "image/svg+xml",
       // Videos
-      "mp4",
-      "avi",
-      "mov",
-      "webm",
+      "video/mp4",
+      "video/avi",
+      "video/quicktime",
+      "video/webm",
       // Documentos
-      "pdf",
-      "doc",
-      "docx",
-      "xls",
-      "xlsx",
-      "ppt",
-      "pptx",
-      "txt",
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.ms-powerpoint",
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      "text/plain",
     ];
 
-    if (!extensionesValidas.includes(extensionLimpia)) {
-      throw new Error(`Extensión de archivo no soportada: ${extension}`);
+    if (!mimeTypesValidos.includes(fileType)) {
+      throw new Error(`Tipo de archivo no soportado: ${fileType}`);
     }
   }
 }

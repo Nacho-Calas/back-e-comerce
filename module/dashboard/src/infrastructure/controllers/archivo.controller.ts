@@ -41,65 +41,99 @@ export class ArchivoController
       });
 
       // Obtener parámetros de query string
-      const { nombreArchivo, tipo, entidadId, extension } =
+      const { fileName, fileType, entidadId, tipo } =
         event.queryStringParameters || {};
 
       // Validaciones básicas
-      if (!nombreArchivo || !tipo || !entidadId || !extension) {
+      if (!fileName || !fileType || !entidadId || !tipo) {
         return {
           statusCode: 400,
           body: JSON.stringify({
             success: false,
             error: {
               message:
-                "Faltan parámetros requeridos: nombreArchivo, tipo, entidadId, extension",
+                "Faltan parámetros requeridos: fileName, fileType, entidadId, tipo",
               code: "MISSING_PARAMETERS",
             },
           }),
         };
       }
 
-      // Validar que nombreArchivo sea un string válido
-      if (typeof nombreArchivo !== "string" || nombreArchivo.trim() === "") {
+      // Validar que fileName sea un string válido
+      if (typeof fileName !== "string" || fileName.trim() === "") {
         return {
           statusCode: 400,
           body: JSON.stringify({
             success: false,
             error: {
               message:
-                "nombreArchivo debe ser un string válido y no puede estar vacío",
+                "fileName debe ser un string válido y no puede estar vacío",
               code: "INVALID_FILENAME",
             },
           }),
         };
       }
 
-      // Limpiar y validar el nombre del archivo
-      const nombreArchivoLimpio = nombreArchivo.trim();
+      // Validar que fileType sea un string válido
+      if (typeof fileType !== "string" || fileType.trim() === "") {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({
+            success: false,
+            error: {
+              message:
+                "fileType debe ser un string válido y no puede estar vacío",
+              code: "INVALID_FILETYPE",
+            },
+          }),
+        };
+      }
+
+      // Validar que entidadId sea un string válido
+      if (typeof entidadId !== "string" || entidadId.trim() === "") {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({
+            success: false,
+            error: {
+              message:
+                "entidadId debe ser un string válido y no puede estar vacío",
+              code: "INVALID_ENTIDAD_ID",
+            },
+          }),
+        };
+      }
+
+      // Validar que tipo sea un string válido
       if (
-        nombreArchivoLimpio.includes("[object Object]") ||
-        nombreArchivoLimpio.includes("undefined")
+        typeof tipo !== "string" ||
+        !["imagen", "video", "archivo"].includes(tipo)
       ) {
         return {
           statusCode: 400,
           body: JSON.stringify({
             success: false,
             error: {
-              message: "nombreArchivo contiene valores inválidos",
-              code: "INVALID_FILENAME_CONTENT",
+              message: "tipo debe ser 'imagen', 'video' o 'archivo'",
+              code: "INVALID_TIPO",
             },
           }),
         };
       }
 
-      if (!["imagen", "video", "archivo"].includes(tipo)) {
+      // Limpiar y validar el nombre del archivo
+      const fileNameLimpio = fileName.trim();
+      if (
+        fileNameLimpio.includes("[object Object]") ||
+        fileNameLimpio.includes("undefined")
+      ) {
         return {
           statusCode: 400,
           body: JSON.stringify({
             success: false,
             error: {
-              message: "El tipo debe ser 'imagen', 'video' o 'archivo'",
-              code: "INVALID_FILE_TYPE",
+              message: "fileName contiene valores inválidos",
+              code: "INVALID_FILENAME_CONTENT",
             },
           }),
         };
@@ -108,10 +142,10 @@ export class ArchivoController
       // Generar presigned URL usando el servicio
       const archivoService = this.getService("archivoService");
       const resultado = await archivoService.generarPresignedUrl(
-        nombreArchivoLimpio,
-        tipo as "imagen" | "video" | "archivo",
-        entidadId,
-        extension
+        fileNameLimpio,
+        fileType.trim(),
+        entidadId.trim(),
+        tipo as "imagen" | "video" | "archivo"
       );
 
       this.getLogger().info({

@@ -37,10 +37,10 @@ export class S3ArchivoAdapter
   }
 
   async generarPresignedUrl(
-    nombreArchivo: string,
-    tipo: "imagen" | "video" | "archivo",
+    fileName: string,
+    fileType: string,
     entidadId: string,
-    extension: string
+    tipo: "imagen" | "video" | "archivo"
   ): Promise<{
     presignedUrl: string;
     key: string;
@@ -50,20 +50,23 @@ export class S3ArchivoAdapter
     this.getLogger().info({
       message: "Generando presigned URL para archivo",
       context: this.getContext(),
-      metadata: { nombreArchivo, tipo, entidadId, extension },
+      metadata: { fileName, fileType, entidadId, tipo },
     });
 
-    // Mapear tipo a carpeta
+    // Extraer nombre del archivo sin extensión
+    const nombreSinExtension = this.extraerNombreSinExtension(fileName);
+
+    // Mapear tipo a nombre de carpeta
     const carpetaTipo = this.mapearTipoACarpeta(tipo);
 
     // Generar key con estructura: {entidadId}/{tipo}/{archivo}
-    const key = `${entidadId}/${carpetaTipo}/${nombreArchivo}.${extension}`;
+    const key = `${entidadId}/${carpetaTipo}/${fileName}`;
 
     // Crear comando para subir objeto
     const command = new PutObjectCommand({
       Bucket: process.env.S3_BUCKET_NAME || "back-e-comerce-files-dev",
       Key: key,
-      ContentType: this.getContentType(extension),
+      ContentType: fileType,
     });
 
     // Generar presigned URL (válida por 1 hora)
@@ -85,9 +88,18 @@ export class S3ArchivoAdapter
     return {
       presignedUrl,
       key,
-      nombreArchivo,
+      nombreArchivo: nombreSinExtension,
       urlPublica,
     };
+  }
+
+  // Extraer nombre del archivo sin extensión
+  private extraerNombreSinExtension(fileName: string): string {
+    const lastDotIndex = fileName.lastIndexOf(".");
+    if (lastDotIndex === -1) {
+      return fileName;
+    }
+    return fileName.substring(0, lastDotIndex);
   }
 
   // Mapear tipo de archivo a nombre de carpeta
@@ -102,38 +114,5 @@ export class S3ArchivoAdapter
       default:
         throw new Error(`Tipo de archivo no soportado: ${tipo}`);
     }
-  }
-
-  private getContentType(extension: string): string {
-    const extensionLower = extension.toLowerCase();
-
-    // Imágenes
-    if (["jpg", "jpeg"].includes(extensionLower)) return "image/jpeg";
-    if (extensionLower === "png") return "image/png";
-    if (extensionLower === "gif") return "image/gif";
-    if (extensionLower === "webp") return "image/webp";
-    if (extensionLower === "svg") return "image/svg+xml";
-
-    // Videos
-    if (extensionLower === "mp4") return "video/mp4";
-    if (extensionLower === "avi") return "video/x-msvideo";
-    if (extensionLower === "mov") return "video/quicktime";
-    if (extensionLower === "webm") return "video/webm";
-
-    // Documentos
-    if (extensionLower === "pdf") return "application/pdf";
-    if (extensionLower === "doc") return "application/msword";
-    if (extensionLower === "docx")
-      return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    if (extensionLower === "xls") return "application/vnd.ms-excel";
-    if (extensionLower === "xlsx")
-      return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-    if (extensionLower === "ppt") return "application/vnd.ms-powerpoint";
-    if (extensionLower === "pptx")
-      return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-    if (extensionLower === "txt") return "text/plain";
-
-    // Por defecto
-    return "application/octet-stream";
   }
 }

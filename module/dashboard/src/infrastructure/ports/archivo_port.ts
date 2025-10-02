@@ -2,10 +2,10 @@ import { IPort } from "@hex-lib/core";
 
 export interface IArchivoPort extends IPort {
   generarPresignedUrl(
-    nombreArchivo: string,
-    tipo: "imagen" | "video" | "archivo",
+    fileName: string,
+    fileType: string,
     entidadId: string,
-    extension: string
+    tipo: "imagen" | "video" | "archivo"
   ): Promise<{
     presignedUrl: string;
     key: string;
