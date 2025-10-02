@@ -1,17 +1,17 @@
 import {
+  ConfiguracionDTO,
+  UpdateConfiguracionDTO,
+} from "@/dashboard/application/dtos/configuracion.dto";
+import { ConfiguracionMapper } from "@/dashboard/application/mappers/configuracion.mapper";
+import { DynamoDBConfiguracionAdapter } from "@/dashboard/infrastructure/adapters/dynamodb-configuracion.adapter";
+import { IConfiguracionPort } from "@/dashboard/infrastructure/ports/configuracion_port";
+import {
+  IContextuable,
+  ILoggeable,
   Service,
   ServiceDecorator,
   type ServiceDependencies,
-  IContextuable,
-  ILoggeable,
 } from "@hex-lib/core";
-import { IConfiguracionPort } from "@/dashboard/infrastructure/ports/configuracion_port";
-import { ConfiguracionMapper } from "@/dashboard/application/mappers/configuracion.mapper";
-import {
-  UpdateConfiguracionDTO,
-  ConfiguracionDTO,
-} from "@/dashboard/application/dtos/configuracion.dto";
-import { DynamoDBConfiguracionAdapter } from "@/dashboard/infrastructure/adapters/dynamodb-configuracion.adapter";
 
 interface ConfiguracionServiceDependencies
   extends Partial<ServiceDependencies> {

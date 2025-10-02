@@ -6,6 +6,7 @@ import {
 import { ProductoNotFoundException } from "@/dashboard/application/exceptions/producto_not_found.exception";
 import { ProductoFactory } from "@/dashboard/application/factories/producto.factory";
 import { ProductoMapper } from "@/dashboard/application/mappers/producto.mapper";
+import { CategoriaProductoEnum } from "@/dashboard/domain/enums/categoria_producto.enum";
 import { DynamoDBProductoAdapter } from "@/dashboard/infrastructure/adapters/dynamodb-producto.adapter";
 import { IProductoPort } from "@/dashboard/infrastructure/ports/producto_port";
 import {
@@ -16,7 +17,6 @@ import {
   ServiceDecorator,
   type ServiceDependencies,
 } from "@hex-lib/core";
-import { CategoriaProductoEnum } from "@/dashboard/domain/enums/categoria_producto.enum";
 
 interface ProductoServiceDependencies extends Partial<ServiceDependencies> {
   ports: {

@@ -1,3 +1,12 @@
+import { ConfiguracionMapper } from "@/dashboard/application/mappers/configuracion.mapper";
+import { Configuracion } from "@/dashboard/domain/entities/configuracion.entity";
+import {
+  DeleteItemCommand,
+  DynamoDBClient,
+  GetItemCommand,
+  PutItemCommand,
+  ScanCommand,
+} from "@aws-sdk/client-dynamodb";
 import {
   Adapter,
   AdapterDecorator,
@@ -7,16 +16,6 @@ import {
   IThrowable,
 } from "@hex-lib/core";
 import { IConfiguracionPort } from "../ports/configuracion_port";
-import { Configuracion } from "@/dashboard/domain/entities/configuracion.entity";
-import { ConfiguracionMapper } from "@/dashboard/src/application/mappers/configuracion.mapper";
-import {
-  DynamoDBClient,
-  PutItemCommand,
-  GetItemCommand,
-  UpdateItemCommand,
-  DeleteItemCommand,
-  ScanCommand,
-} from "@aws-sdk/client-dynamodb";
 
 export interface ConfiguracionAdapterDependencies
   extends Partial<AdapterDependencies> {

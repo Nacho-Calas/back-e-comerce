@@ -1,24 +1,25 @@
 import {
-  Service,
-  ServiceDecorator,
-  type ServiceDependencies,
+  ActualizarCantidadItemDTO,
+  AgregarItemCarritoDTO,
+  CarritoDTO,
+  CreateCarritoDTO,
+  EliminarItemCarritoDTO,
+} from "@/dashboard/application/dtos/carrito.dto";
+import { CarritoMapper } from "@/dashboard/application/mappers/carrito.mapper";
+import { Carrito } from "@/dashboard/domain/entities/carrito.entity";
+import { DynamoDBCarritoAdapter } from "@/dashboard/infrastructure/adapters/dynamodb-carrito.adapter";
+import { DynamoDBProductoAdapter } from "@/dashboard/infrastructure/adapters/dynamodb-producto.adapter";
+import { ICarritoPort } from "@/dashboard/infrastructure/ports/carrito_port";
+import { IProductoPort } from "@/dashboard/infrastructure/ports/producto_port";
+import {
   IContextuable,
   ILoggeable,
   IThrowable,
+  Service,
+  ServiceDecorator,
+  UUID,
+  type ServiceDependencies,
 } from "@hex-lib/core";
-import { Carrito } from "@/dashboard/domain/entities/carrito.entity";
-import { CarritoMapper } from "@/dashboard/application/mappers/carrito.mapper";
-import {
-  CreateCarritoDTO,
-  AgregarItemCarritoDTO,
-  ActualizarCantidadItemDTO,
-  EliminarItemCarritoDTO,
-  CarritoDTO,
-} from "@/dashboard/application/dtos/carrito.dto";
-import { ICarritoPort } from "@/dashboard/infrastructure/ports/carrito_port";
-import { IProductoPort } from "@/dashboard/infrastructure/ports/producto_port";
-import { DynamoDBCarritoAdapter } from "@/dashboard/infrastructure/adapters/dynamodb-carrito.adapter";
-import { DynamoDBProductoAdapter } from "@/dashboard/infrastructure/adapters/dynamodb-producto.adapter";
 
 interface CarritoServiceDependencies extends Partial<ServiceDependencies> {
   ports: {
@@ -51,7 +52,7 @@ export class CarritoService
 
     const carritoPort = this.getPort("carritoPort");
     const carrito = new Carrito({
-      id: require("@hex-lib/core").UUID.create(),
+      id: UUID.create(),
       sessionId: dto.sessionId,
       items:
         dto.items?.map((item: any) => ({

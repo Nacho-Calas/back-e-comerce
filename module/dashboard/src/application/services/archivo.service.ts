@@ -1,12 +1,12 @@
 import {
+  IContextuable,
+  ILoggeable,
   Service,
   ServiceDecorator,
   type ServiceDependencies,
-  IContextuable,
-  ILoggeable,
 } from "@hex-lib/core";
-import { IArchivoPort } from "../../infrastructure/ports/archivo_port";
 import { S3ArchivoAdapter } from "../../infrastructure/adapters/s3-archivo.adapter";
+import { IArchivoPort } from "../../infrastructure/ports/archivo_port";
 
 interface ArchivoServiceDependencies extends Partial<ServiceDependencies> {
   ports: {
@@ -104,11 +104,26 @@ export class ArchivoService
     const extensionLimpia = extension.toLowerCase().trim();
     const extensionesValidas = [
       // Imágenes
-      "jpg", "jpeg", "png", "gif", "webp", "svg",
+      "jpg",
+      "jpeg",
+      "png",
+      "gif",
+      "webp",
+      "svg",
       // Videos
-      "mp4", "avi", "mov", "webm",
+      "mp4",
+      "avi",
+      "mov",
+      "webm",
       // Documentos
-      "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt"
+      "pdf",
+      "doc",
+      "docx",
+      "xls",
+      "xlsx",
+      "ppt",
+      "pptx",
+      "txt",
     ];
 
     if (!extensionesValidas.includes(extensionLimpia)) {

@@ -1,10 +1,10 @@
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import {
   Adapter,
   AdapterDecorator,
   type AdapterDependencies,
 } from "@hex-lib/core";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { IArchivoPort } from "../ports/archivo_port";
 
 export interface S3ArchivoAdapterDependencies
