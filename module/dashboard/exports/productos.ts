@@ -123,7 +123,9 @@ export const getAllProductos = async (
 ): Promise<APIGatewayProxyResultV2> => {
   const productoController = new ProductoController();
   try {
-    const result = await productoController.getAllProductos();
+    const includeInactive =
+      event.queryStringParameters?.includeInactive === "true";
+    const result = await productoController.getAllProductos(includeInactive);
 
     return {
       statusCode: 200,
@@ -151,6 +153,8 @@ export const getProductosByCategoria = async (
   const productoController = new ProductoController();
   try {
     const categoria = event.pathParameters?.categoria as CategoriaProductoEnum;
+    const includeInactive =
+      event.queryStringParameters?.includeInactive === "true";
     if (!categoria) {
       return {
         statusCode: 400,
@@ -160,7 +164,10 @@ export const getProductosByCategoria = async (
       };
     }
 
-    const result = await productoController.getProductosByCategoria(categoria);
+    const result = await productoController.getProductosByCategoria(
+      categoria,
+      includeInactive
+    );
 
     return {
       statusCode: 200,
@@ -187,7 +194,11 @@ export const getProductosDestacados = async (
 ): Promise<APIGatewayProxyResultV2> => {
   const productoController = new ProductoController();
   try {
-    const result = await productoController.getProductosDestacados();
+    const includeInactive =
+      event.queryStringParameters?.includeInactive === "true";
+    const result = await productoController.getProductosDestacados(
+      includeInactive
+    );
 
     return {
       statusCode: 200,
@@ -215,6 +226,8 @@ export const buscarProductos = async (
   const productoController = new ProductoController();
   try {
     const termino = event.queryStringParameters?.q;
+    const includeInactive =
+      event.queryStringParameters?.includeInactive === "true";
     if (!termino) {
       return {
         statusCode: 400,
@@ -224,7 +237,10 @@ export const buscarProductos = async (
       };
     }
 
-    const result = await productoController.buscarProductos(termino);
+    const result = await productoController.buscarProductos(
+      termino,
+      includeInactive
+    );
 
     return {
       statusCode: 200,

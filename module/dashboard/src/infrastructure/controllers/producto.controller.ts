@@ -81,14 +81,16 @@ export class ProductoController
   /**
    * Obtener todos los productos
    */
-  async getAllProductos(): Promise<ProductoDTO[] | null> {
+  async getAllProductos(
+    includeInactive?: boolean
+  ): Promise<ProductoDTO[] | null> {
     this.getLogger().info({
       message: "Solicitud de obtención de todos los productos",
       context: this.getContext(),
     });
 
     const productoService = this.getService("productoService");
-    const result = await productoService.getAllProductos();
+    const result = await productoService.getAllProductos(includeInactive);
 
     this.getLogger().info({
       message: "Productos obtenidos exitosamente",
@@ -103,7 +105,8 @@ export class ProductoController
    * Obtener productos por categoría
    */
   async getProductosByCategoria(
-    categoria: CategoriaProductoEnum
+    categoria: CategoriaProductoEnum,
+    includeInactive?: boolean
   ): Promise<ProductoDTO[] | null> {
     this.getLogger().info({
       message: "Solicitud de obtención de productos por categoría",
@@ -112,7 +115,10 @@ export class ProductoController
     });
 
     const productoService = this.getService("productoService");
-    const result = await productoService.getProductosByCategoria(categoria);
+    const result = await productoService.getProductosByCategoria(
+      categoria,
+      includeInactive
+    );
 
     this.getLogger().info({
       message: "Productos por categoría obtenidos exitosamente",
@@ -126,14 +132,18 @@ export class ProductoController
   /**
    * Obtener productos destacados
    */
-  async getProductosDestacados(): Promise<ProductoDTO[] | null> {
+  async getProductosDestacados(
+    includeInactive?: boolean
+  ): Promise<ProductoDTO[] | null> {
     this.getLogger().info({
       message: "Solicitud de obtención de productos destacados",
       context: this.getContext(),
     });
 
     const productoService = this.getService("productoService");
-    const result = await productoService.getProductosDestacados();
+    const result = await productoService.getProductosDestacados(
+      includeInactive
+    );
 
     this.getLogger().info({
       message: "Productos destacados obtenidos exitosamente",
@@ -147,7 +157,10 @@ export class ProductoController
   /**
    * Buscar productos por término
    */
-  async buscarProductos(termino: string): Promise<ProductoDTO[] | null> {
+  async buscarProductos(
+    termino: string,
+    includeInactive?: boolean
+  ): Promise<ProductoDTO[] | null> {
     this.getLogger().info({
       message: "Solicitud de búsqueda de productos",
       context: this.getContext(),
@@ -155,7 +168,10 @@ export class ProductoController
     });
 
     const productoService = this.getService("productoService");
-    const result = await productoService.buscarProductos(termino);
+    const result = await productoService.buscarProductos(
+      termino,
+      includeInactive
+    );
 
     this.getLogger().info({
       message: "Búsqueda de productos completada",

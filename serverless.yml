@@ -380,6 +380,7 @@ resources:
     FilesBucket:
       Type: AWS::S3::Bucket
       Properties:
+        BucketName: ${self:custom.filesBucketName}
         PublicAccessBlockConfiguration:
           BlockPublicAcls: false
           BlockPublicPolicy: false
@@ -390,6 +391,7 @@ resources:
             - AllowedHeaders: ["*"]
               AllowedMethods: [GET, PUT, POST, DELETE, HEAD]
               AllowedOrigins: ["*"]
+              ExposedHeaders: [ETag, x-amz-request-id, x-amz-id-2]
               MaxAge: 3000
         VersioningConfiguration:
           Status: Enabled

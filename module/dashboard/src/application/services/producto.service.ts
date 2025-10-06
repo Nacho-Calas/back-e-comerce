@@ -47,12 +47,19 @@ export class ProductoService
       });
 
       console.log("=== PRODUCTO SERVICE - CREATE PRODUCTO ===");
-      console.log("DTO received:", JSON.stringify({
-        nombre: dto.nombre,
-        categoria: dto.categoria,
-        precio: dto.precio,
-        estado: dto.estado
-      }, null, 2));
+      console.log(
+        "DTO received:",
+        JSON.stringify(
+          {
+            nombre: dto.nombre,
+            categoria: dto.categoria,
+            precio: dto.precio,
+            estado: dto.estado,
+          },
+          null,
+          2
+        )
+      );
 
       console.log("Getting productoPort...");
       const productoPort = this.getPort("productoPort");
@@ -60,12 +67,19 @@ export class ProductoService
 
       console.log("Creating producto entity using ProductoFactory...");
       const producto = ProductoFactory.create(dto);
-      console.log("Producto entity created:", JSON.stringify({
-        id: producto.getId().getValue(),
-        nombre: producto.getNombre(),
-        categoria: producto.getCategoria(),
-        precio: producto.getPrecio()
-      }, null, 2));
+      console.log(
+        "Producto entity created:",
+        JSON.stringify(
+          {
+            id: producto.getId().getValue(),
+            nombre: producto.getNombre(),
+            categoria: producto.getCategoria(),
+            precio: producto.getPrecio(),
+          },
+          null,
+          2
+        )
+      );
 
       console.log("Calling productoPort.createProducto...");
       await productoPort.createProducto(producto);
@@ -87,18 +101,18 @@ export class ProductoService
       console.log("=== PRODUCTO SERVICE - ERROR ===");
       console.error("Error in ProductoService.createProducto:", error);
       console.error("Error details:", {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : 'No stack trace',
-        name: error instanceof Error ? error.name : 'Unknown error type'
+        message: error instanceof Error ? error.message : "Unknown error",
+        stack: error instanceof Error ? error.stack : "No stack trace",
+        name: error instanceof Error ? error.name : "Unknown error type",
       });
 
       this.getLogger().error({
         message: "Error creando producto en servicio",
         context: this.getContext(),
-        metadata: { 
+        metadata: {
           nombre: dto.nombre,
           categoria: dto.categoria,
-          error: error instanceof Error ? error.message : 'Unknown error'
+          error: error instanceof Error ? error.message : "Unknown error",
         },
       });
 
@@ -135,14 +149,16 @@ export class ProductoService
   /**
    * Obtener todos los productos
    */
-  async getAllProductos(): Promise<ProductoDTO[] | null> {
+  async getAllProductos(
+    includeInactive?: boolean
+  ): Promise<ProductoDTO[] | null> {
     this.getLogger().info({
       message: "Iniciando obtención de todos los productos",
       context: this.getContext(),
     });
 
     const productoPort = this.getPort("productoPort");
-    const productos = await productoPort.getAllProductos();
+    const productos = await productoPort.getAllProductos(includeInactive);
 
     if (!productos) {
       return null;
@@ -165,7 +181,8 @@ export class ProductoService
    * Obtener productos por categoría
    */
   async getProductosByCategoria(
-    categoria: CategoriaProductoEnum
+    categoria: CategoriaProductoEnum,
+    includeInactive?: boolean
   ): Promise<ProductoDTO[] | null> {
     this.getLogger().info({
       message: "Iniciando obtención de productos por categoría",
@@ -174,7 +191,10 @@ export class ProductoService
     });
 
     const productoPort = this.getPort("productoPort");
-    const productos = await productoPort.getProductosByCategoria(categoria);
+    const productos = await productoPort.getProductosByCategoria(
+      categoria,
+      includeInactive
+    );
 
     if (!productos) {
       return null;
@@ -196,14 +216,18 @@ export class ProductoService
   /**
    * Obtener productos destacados
    */
-  async getProductosDestacados(): Promise<ProductoDTO[] | null> {
+  async getProductosDestacados(
+    includeInactive?: boolean
+  ): Promise<ProductoDTO[] | null> {
     this.getLogger().info({
       message: "Iniciando obtención de productos destacados",
       context: this.getContext(),
     });
 
     const productoPort = this.getPort("productoPort");
-    const productos = await productoPort.getProductosDestacados();
+    const productos = await productoPort.getProductosDestacados(
+      includeInactive
+    );
 
     if (!productos) {
       return null;
@@ -225,7 +249,10 @@ export class ProductoService
   /**
    * Buscar productos por término
    */
-  async buscarProductos(termino: string): Promise<ProductoDTO[] | null> {
+  async buscarProductos(
+    termino: string,
+    includeInactive?: boolean
+  ): Promise<ProductoDTO[] | null> {
     this.getLogger().info({
       message: "Iniciando búsqueda de productos",
       context: this.getContext(),
@@ -233,7 +260,10 @@ export class ProductoService
     });
 
     const productoPort = this.getPort("productoPort");
-    const productos = await productoPort.buscarProductos(termino);
+    const productos = await productoPort.buscarProductos(
+      termino,
+      includeInactive
+    );
 
     if (!productos) {
       return null;

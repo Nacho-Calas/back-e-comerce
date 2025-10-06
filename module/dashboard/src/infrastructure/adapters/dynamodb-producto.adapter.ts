@@ -147,20 +147,19 @@ export class DynamoDBProductoAdapter
     return producto;
   }
 
-  async getAllProductos(): Promise<Producto[] | null> {
+  async getAllProductos(includeInactive?: boolean): Promise<Producto[] | null> {
     this.getLogger().info({
       message: "Obteniendo todos los productos desde DynamoDB",
       context: this.getContext(),
     });
 
+    const params: any = { TableName: this.getVar("PRODUCTOS_TABLE") };
+    if (!includeInactive) {
+      params.FilterExpression = "activo = :activo";
+      params.ExpressionAttributeValues = { ":activo": { S: "true" } };
+    }
     const result = await this.getVar("dynamoClient").send(
-      new ScanCommand({
-        TableName: this.getVar("PRODUCTOS_TABLE"),
-        FilterExpression: "activo = :activo",
-        ExpressionAttributeValues: {
-          ":activo": { S: "true" },
-        },
-      })
+      new ScanCommand(params)
     );
 
     if (!result.Items || result.Items.length === 0) {
@@ -185,7 +184,8 @@ export class DynamoDBProductoAdapter
   }
 
   async getProductosByCategoria(
-    categoria: CategoriaProductoEnum
+    categoria: CategoriaProductoEnum,
+    includeInactive?: boolean
   ): Promise<Producto[] | null> {
     this.getLogger().info({
       message: "Obteniendo productos por categoría desde DynamoDB",
@@ -193,17 +193,18 @@ export class DynamoDBProductoAdapter
       metadata: { categoria },
     });
 
+    const params: any = {
+      TableName: this.getVar("PRODUCTOS_TABLE"),
+      IndexName: "categoria-index",
+      KeyConditionExpression: "categoria = :categoria",
+      ExpressionAttributeValues: { ":categoria": { S: categoria } },
+    };
+    if (!includeInactive) {
+      params.FilterExpression = "activo = :activo";
+      params.ExpressionAttributeValues[":activo"] = { S: "true" };
+    }
     const result = await this.getVar("dynamoClient").send(
-      new QueryCommand({
-        TableName: this.getVar("PRODUCTOS_TABLE"),
-        IndexName: "categoria-index",
-        KeyConditionExpression: "categoria = :categoria",
-        FilterExpression: "activo = :activo",
-        ExpressionAttributeValues: {
-          ":categoria": { S: categoria },
-          ":activo": { S: "true" },
-        },
-      })
+      new QueryCommand(params)
     );
 
     if (!result.Items || result.Items.length === 0) {
@@ -228,23 +229,26 @@ export class DynamoDBProductoAdapter
     return productos;
   }
 
-  async getProductosDestacados(): Promise<Producto[] | null> {
+  async getProductosDestacados(
+    includeInactive?: boolean
+  ): Promise<Producto[] | null> {
     this.getLogger().info({
       message: "Obteniendo productos destacados desde DynamoDB",
       context: this.getContext(),
     });
 
+    const params: any = {
+      TableName: this.getVar("PRODUCTOS_TABLE"),
+      IndexName: "destacado-index",
+      KeyConditionExpression: "destacado = :destacado",
+      ExpressionAttributeValues: { ":destacado": { S: "true" } },
+    };
+    if (!includeInactive) {
+      params.FilterExpression = "activo = :activo";
+      params.ExpressionAttributeValues[":activo"] = { S: "true" };
+    }
     const result = await this.getVar("dynamoClient").send(
-      new QueryCommand({
-        TableName: this.getVar("PRODUCTOS_TABLE"),
-        IndexName: "destacado-index",
-        KeyConditionExpression: "destacado = :destacado",
-        FilterExpression: "activo = :activo",
-        ExpressionAttributeValues: {
-          ":destacado": { S: "true" },
-          ":activo": { S: "true" },
-        },
-      })
+      new QueryCommand(params)
     );
 
     if (!result.Items || result.Items.length === 0) {
@@ -268,22 +272,24 @@ export class DynamoDBProductoAdapter
     return productos;
   }
 
-  async buscarProductos(termino: string): Promise<Producto[] | null> {
+  async buscarProductos(
+    termino: string,
+    includeInactive?: boolean
+  ): Promise<Producto[] | null> {
     this.getLogger().info({
       message: "Buscando productos en DynamoDB",
       context: this.getContext(),
       metadata: { termino },
     });
 
-    // Obtener todos los productos activos
+    // Obtener productos (incluyendo inactivos si corresponde)
+    const scanParams: any = { TableName: this.getVar("PRODUCTOS_TABLE") };
+    if (!includeInactive) {
+      scanParams.FilterExpression = "activo = :activo";
+      scanParams.ExpressionAttributeValues = { ":activo": { S: "true" } };
+    }
     const result = await this.getVar("dynamoClient").send(
-      new ScanCommand({
-        TableName: this.getVar("PRODUCTOS_TABLE"),
-        FilterExpression: "activo = :activo",
-        ExpressionAttributeValues: {
-          ":activo": { S: "true" },
-        },
-      })
+      new ScanCommand(scanParams)
     );
 
     if (!result.Items || result.Items.length === 0) {
@@ -305,7 +311,7 @@ export class DynamoDBProductoAdapter
       const nombre = producto.getNombre().toLowerCase();
       const descripcion = producto.getDescripcion().toLowerCase();
       const categoria = producto.getCategoria().toLowerCase();
-      
+
       return (
         nombre.includes(terminoLower) ||
         descripcion.includes(terminoLower) ||
