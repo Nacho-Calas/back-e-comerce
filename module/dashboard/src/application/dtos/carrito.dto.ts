@@ -135,6 +135,14 @@ export class CarritoDTO {
   @IsString()
   fechaActualizacion!: string;
 
+  @IsOptional()
+  @IsNumber()
+  total?: number;
+
+  @IsOptional()
+  @IsNumber()
+  totalItems?: number;
+
   constructor(carritoResponseDTO: CarritoDTO) {
     this.id = carritoResponseDTO.id;
     this.sessionId = carritoResponseDTO.sessionId;
@@ -143,5 +151,7 @@ export class CarritoDTO {
     );
     this.fechaCreacion = carritoResponseDTO.fechaCreacion;
     this.fechaActualizacion = carritoResponseDTO.fechaActualizacion;
+    this.total = carritoResponseDTO.total || 0;
+    this.totalItems = carritoResponseDTO.totalItems || 0;
   }
 }

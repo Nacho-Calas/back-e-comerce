@@ -105,6 +105,27 @@ export class CarritoController
   }
 
   /**
+   * Obtener todos los carritos (para administración)
+   */
+  async getAllCarritos(): Promise<CarritoDTO[]> {
+    this.getLogger().info({
+      message: "Solicitud de obtención de todos los carritos",
+      context: this.getContext(),
+    });
+
+    const carritoService = this.getService("carritoService");
+    const result = await carritoService.getAllCarritos();
+
+    this.getLogger().info({
+      message: "Carritos obtenidos exitosamente",
+      context: this.getContext(),
+      metadata: { totalCarritos: result.length },
+    });
+
+    return result;
+  }
+
+  /**
    * Agregar item al carrito
    */
   async agregarItem(agregarDTO: AgregarItemCarritoDTO): Promise<CarritoDTO> {

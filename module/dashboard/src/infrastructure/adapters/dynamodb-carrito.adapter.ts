@@ -7,6 +7,7 @@ import {
   GetItemCommand,
   PutItemCommand,
   QueryCommand,
+  ScanCommand,
 } from "@aws-sdk/client-dynamodb";
 import {
   Adapter,
@@ -135,6 +136,39 @@ export class DynamoDBCarritoAdapter
     });
 
     return carrito;
+  }
+
+  async getAllCarritos(): Promise<Carrito[]> {
+    this.getLogger().info({
+      message: "Obteniendo todos los carritos desde DynamoDB",
+      context: this.getContext(),
+    });
+
+    const result = await this.getVar("dynamoClient").send(
+      new ScanCommand({
+        TableName: this.getVar("CARRITOS_TABLE"),
+      })
+    );
+
+    if (!result.Items || result.Items.length === 0) {
+      this.getLogger().info({
+        message: "No se encontraron carritos",
+        context: this.getContext(),
+      });
+      return [];
+    }
+
+    const carritos = result.Items.map((item) =>
+      CarritoMapper.fromDynamoDB(item)
+    );
+
+    this.getLogger().info({
+      message: "Carritos obtenidos exitosamente",
+      context: this.getContext(),
+      metadata: { totalCarritos: carritos.length },
+    });
+
+    return carritos;
   }
 
   async updateCarrito(carrito: Carrito): Promise<void> {

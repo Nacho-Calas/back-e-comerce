@@ -89,6 +89,8 @@ export class CarritoMapper {
       ),
       fechaCreacion: carrito.getFechaCreacion(),
       fechaActualizacion: carrito.getFechaActualizacion(),
+      total: carrito.getSubtotal(),
+      totalItems: carrito.getTotalItems(),
     });
   }
 }

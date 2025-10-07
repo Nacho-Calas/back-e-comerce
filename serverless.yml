@@ -211,6 +211,15 @@ functions:
           path: /carrito/session/{sessionId}
           method: GET
 
+  getAllCarritos:
+    handler: module/dashboard/exports/carrito.getAllCarritos
+    events:
+      - httpApi:
+          path: /carrito/all
+          method: GET
+          authorizer:
+            name: lambdaAuthorizer
+
   agregarItem:
     handler: module/dashboard/exports/carrito.agregarItem
     events:

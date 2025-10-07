@@ -58,7 +58,10 @@ export class Carrito {
   }
 
   getSubtotal(): number {
-    return this.items.reduce((total, item) => total + (item.precio * item.cantidad), 0);
+    return this.items.reduce(
+      (total, item) => total + item.precio * item.cantidad,
+      0
+    );
   }
 
   getSubtotalFormateado(): string {
@@ -71,20 +74,22 @@ export class Carrito {
 
   // Métodos de gestión de items
   agregarItem(item: ItemCarrito): void {
-    const itemExistente = this.items.find(i => i.productoId === item.productoId);
-    
+    const itemExistente = this.items.find(
+      (i) => i.productoId === item.productoId
+    );
+
     if (itemExistente) {
       itemExistente.cantidad += item.cantidad;
     } else {
       this.items.push(item);
     }
-    
+
     this.fechaActualizacion = new Date().toISOString();
   }
 
   actualizarCantidad(productoId: string, cantidad: number): void {
-    const item = this.items.find(i => i.productoId === productoId);
-    
+    const item = this.items.find((i) => i.productoId === productoId);
+
     if (item) {
       if (cantidad <= 0) {
         this.eliminarItem(productoId);
@@ -96,7 +101,7 @@ export class Carrito {
   }
 
   eliminarItem(productoId: string): void {
-    this.items = this.items.filter(item => item.productoId !== productoId);
+    this.items = this.items.filter((item) => item.productoId !== productoId);
     this.fechaActualizacion = new Date().toISOString();
   }
 
@@ -106,7 +111,7 @@ export class Carrito {
   }
 
   getItem(productoId: string): ItemCarrito | undefined {
-    return this.items.find(item => item.productoId === productoId);
+    return this.items.find((item) => item.productoId === productoId);
   }
 
   // Setters

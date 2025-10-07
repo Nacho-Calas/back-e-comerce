@@ -5,6 +5,7 @@ export interface ICarritoPort extends IPort {
   createCarrito(carrito: Carrito): Promise<void>;
   getCarritoById(id: string): Promise<Carrito | null>;
   getCarritoBySession(sessionId: string): Promise<Carrito | null>;
+  getAllCarritos(): Promise<Carrito[]>;
   updateCarrito(carrito: Carrito): Promise<void>;
   deleteCarrito(id: string): Promise<void>;
 }

@@ -250,6 +250,33 @@ export const eliminarItem = async (
 };
 
 /**
+ * Obtener todos los carritos (para administración)
+ */
+export const getAllCarritos = async (
+  event: APIGatewayProxyEventV2
+): Promise<APIGatewayProxyResultV2> => {
+  const carritoController = new CarritoController();
+  try {
+    const result = await carritoController.getAllCarritos();
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        success: true,
+        result,
+      }),
+    };
+  } catch (error) {
+    const exceptionManager = carritoController.getExceptionManager();
+    exceptionManager.handleException(error, carritoController.getContext());
+    return formatErrorResponse(
+      exceptionManager.getExceptions(),
+      exceptionManager.getPrincipalStatus()
+    );
+  }
+};
+
+/**
  * Limpiar carrito
  */
 export const limpiarCarrito = async (
